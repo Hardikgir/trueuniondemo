@@ -128,6 +128,39 @@
             }
         });
     });
+
+    const tomSelect = new TomSelect('#languages_known',{
+        plugins: ['remove_button'],
+        create: true,
+        createOnBlur: true,
+    });
+
+    const selectedContainer = document.getElementById('languages_known_selected');
+
+    const renderBadges = () => {
+        console.log('Rendering badges for items:', tomSelect.items);
+        selectedContainer.innerHTML = '';
+        const selectedItems = tomSelect.items;
+        selectedItems.forEach(value => {
+            const badge = document.createElement('div');
+            badge.className = 'inline-flex items-center px-2.5 py-1.5 mr-2 my-1 text-sm font-medium text-indigo-800 bg-indigo-100 rounded-full';
+            badge.innerHTML = `
+                <span>${value}</span>
+                <button type="button" class="inline-flex items-center p-1 ml-2 text-sm text-indigo-400 bg-transparent rounded-sm hover:bg-indigo-200 hover:text-indigo-900" data-value="${value}">
+                    <svg class="w-2 h-2" stroke="currentColor" fill="none" viewBox="0 0 8 8"><path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" /></svg>
+                </button>
+            `;
+            selectedContainer.appendChild(badge);
+            badge.querySelector('button').addEventListener('click', () => {
+                tomSelect.removeItem(value);
+            });
+        });
+    }
+
+    tomSelect.on('item_add', renderBadges);
+    tomSelect.on('item_remove', renderBadges);
+
+    renderBadges();
 </script>
 @endpush
 

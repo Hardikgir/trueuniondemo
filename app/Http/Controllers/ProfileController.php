@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB; // Add this import for database operations
 use Illuminate\Validation\Rule;
 use App\Models\User;
 use Carbon\Carbon;
+use App\Models\MotherTongueMaster;
+use App\Models\CasteMaster;
 
 class ProfileController extends Controller
 {
@@ -18,7 +20,9 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = Auth::user();
-        return view('pages.edit-profile', compact('user'));
+        $motherTongues = MotherTongueMaster::where('status', 1)->get();
+        $castes = CasteMaster::where('status', 1)->get();
+        return view('pages.edit-profile', compact('user', 'motherTongues', 'castes'));
     }
 
     /**

@@ -87,7 +87,14 @@
     </div>
     <div>
         <label for="caste" class="form-label">{{ __('caste') }}</label>
-        <input type="text" id="caste" name="caste" class="form-input" placeholder="{{ __('enter_your_caste') }}" value="{{ old('caste', $user->caste) }}">
+        <select id="caste" name="caste" class="form-select">
+            <option value="" disabled {{ !$user->caste ? 'selected' : '' }}>{{ __('select_caste') }}</option>
+            @if(isset($castes))
+                @foreach($castes as $caste)
+                    <option value="{{ $caste->title }}" {{ old('caste', $user->caste) == $caste->title ? 'selected' : '' }}>{{ $caste->title }}</option>
+                @endforeach
+            @endif
+        </select>
     </div>
 </div>
 
@@ -106,7 +113,14 @@
     </div>
     <div>
         <label for="mother_tongue" class="form-label">{{ __('mother_tongue') }}</label>
-        <input type="text" name="mother_tongue" class="form-input" value="{{ old('mother_tongue', $user->mother_tongue) }}">
+        <select id="mother_tongue" name="mother_tongue" class="form-select">
+            <option value="" disabled {{ !$user->mother_tongue ? 'selected' : '' }}>{{ __('select_mother_tongue') }}</option>
+            @if(isset($motherTongues))
+                @foreach($motherTongues as $tongue)
+                    <option value="{{ $tongue->title }}" {{ old('mother_tongue', $user->mother_tongue) == $tongue->title ? 'selected' : '' }}>{{ $tongue->title }}</option>
+                @endforeach
+            @endif
+        </select>
     </div>
      <div class="lg:col-span-3">
         <label class="form-label">{{ __('dietary_choice') }}</label>
@@ -118,16 +132,18 @@
      @php
         $known_languages = explode(',', old('languages_known', $user->languages_known));
     @endphp
-    <div class="lg:col-span-3">
-        <label class="form-label">{{ __('languages_known') }}</label>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 mt-2">
-            @foreach(['Hindi', 'English', 'Marathi', 'Gujarati', 'Kannada', 'Tamil', 'Telugu', 'Punjabi'] as $language)
-                <label class="flex items-center">
-                    <input type="checkbox" name="languages[]" value="{{ $language }}" class="h-4 w-4 rounded" {{ in_array($language, $known_languages) ? 'checked' : '' }}> 
-                    <span class="ml-2">{{ __($language) }}</span>
-                </label>
-            @endforeach
+    <div class="lg:col-span-3 grid grid-cols-2 gap-4">
+        <div>
+            <label class="form-label">{{ __('languages_known') }}</label>
+            <select id="languages_known" name="languages[]" multiple>
+                @if(isset($motherTongues))
+                    @foreach($motherTongues as $tongue)
+                        <option value="{{ $tongue->title }}" {{ in_array($tongue->title, $known_languages) ? 'selected' : '' }}>{{ $tongue->title }}</option>
+                    @endforeach
+                @endif
+            </select>
         </div>
+        <div id="languages_known_selected" class="pt-7"></div>
     </div>
 </div>
 

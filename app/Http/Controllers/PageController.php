@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\MotherTongueMaster;
+use App\Models\CasteMaster;
+
 class PageController extends Controller
 {
     // ... other methods like home(), signup(), etc. ...
@@ -20,7 +23,9 @@ class PageController extends Controller
 
     public function signup()
     {
-        return view('pages.signup');
+        $motherTongues = MotherTongueMaster::where('status', 1)->get();
+        $castes = CasteMaster::where('status', 1)->get();
+        return view('pages.signup', compact('motherTongues', 'castes'));
     }
 
     public function login()
