@@ -130,22 +130,143 @@
         </div>
     </div>
      @php
-        $known_languages = explode(',', old('languages_known', $user->languages_known));
+        $known_languages = array_filter(explode(',', old('languages_known', $user->languages_known)));
     @endphp
-    <div class="lg:col-span-3 grid grid-cols-2 gap-4">
-        <div>
-            <label class="form-label">{{ __('languages_known') }}</label>
-            <select id="languages_known" name="languages[]" multiple>
-                @if(isset($motherTongues))
-                    @foreach($motherTongues as $tongue)
-                        <option value="{{ $tongue->title }}" {{ in_array($tongue->title, $known_languages) ? 'selected' : '' }}>{{ $tongue->title }}</option>
-                    @endforeach
-                @endif
-            </select>
+    <div class="lg:col-span-3">
+        <label class="form-label">{{ __('languages_known') }}</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-end">
+                <div class="flex-grow">
+                    <select id="languages_known_select" class="form-select w-full">
+                        <option value="">{{ __('select') }}</option>
+                        @if(isset($motherTongues))
+                            @foreach($motherTongues as $tongue)
+                                <option value="{{ $tongue->title }}">{{ $tongue->title }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+                <button type="button" id="add_language_btn" class="ml-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">{{ __('add') }}</button>
+            </div>
+            <div id="languages_known_container" class="pt-2 flex flex-wrap gap-2">
+                {{-- Badges will be injected here by JS --}}
+            </div>
         </div>
-        <div id="languages_known_selected" class="pt-7"></div>
+        <div id="languages_hidden_inputs" class="hidden">
+            @foreach($known_languages as $lang)
+                <input type="hidden" name="languages[]" value="{{ $lang }}">
+            @endforeach
+        </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('languages_known_select');
+    const addButton = document.getElementById('add_language_btn');
+    const container = document.getElementById('languages_known_container');
+    const hiddenInputsContainer = document.getElementById('languages_hidden_inputs');
+
+    // Initialize the set of selected languages from the hidden inputs
+    const selectedLanguages = new Set(
+        Array.from(hiddenInputsContainer.querySelectorAll('input[name="languages[]"]'))
+             .map(input => input.value)
+    );
+
+    // Function to create a language badge
+    function createBadge(language) {
+        const badge = document.createElement('div');
+        badge.className = 'flex items-center bg-indigo-100 text-indigo-800 text-sm font-medium px-2.5 py-0.5 rounded-full';
+        badge.dataset.language = language;
+
+        const text = document.createElement('span');
+        text.textContent = language;
+        badge.appendChild(text);
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'ml-2 text-indigo-500 hover:text-indigo-700 focus:outline-none';
+        removeButton.innerHTML = '&times;';
+        removeButton.setAttribute('aria-label', 'Remove ' + language);
+        removeButton.onclick = function() {
+            removeLanguage(language);
+        };
+        badge.appendChild(removeButton);
+
+        return badge;
+    }
+
+    // Function to add a new language
+    function addLanguage(language) {
+        if (!language || selectedLanguages.has(language)) {
+            return; // Don't add empty or duplicate languages
+        }
+
+        selectedLanguages.add(language);
+
+        // Add badge to the container
+        const badge = createBadge(language);
+        container.appendChild(badge);
+
+        // Add hidden input for form submission
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'languages[]';
+        input.value = language;
+        hiddenInputsContainer.appendChild(input);
+    }
+
+    // Function to remove a language
+    function removeLanguage(language) {
+        selectedLanguages.delete(language);
+
+        // Remove badge from the container
+        const badge = container.querySelector(`[data-language="${language}"]`);
+        if (badge) {
+            container.removeChild(badge);
+        }
+
+        // Remove hidden input
+        const input = hiddenInputsContainer.querySelector(`input[value="${language}"]`);
+        if (input) {
+            hiddenInputsContainer.removeChild(input);
+        }
+    }
+
+    // --- Event Listeners ---
+
+    // Add button click
+    addButton.addEventListener('click', function() {
+        const selectedValue = select.value;
+        if (selectedValue) {
+            addLanguage(selectedValue);
+            select.value = ''; // Reset dropdown
+        }
+    });
+
+    // Optional: Allow adding language by pressing Enter in the select dropdown
+    select.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const selectedValue = select.value;
+            if (selectedValue) {
+                addLanguage(selectedValue);
+                select.value = ''; // Reset dropdown
+            }
+        }
+    });
+
+    // --- Initialization ---
+
+    // Create badges for any languages that were already selected (e.g., from old input or db)
+    selectedLanguages.forEach(lang => {
+        const badge = createBadge(lang);
+        container.appendChild(badge);
+    });
+});
+</script>
+@endpush
 
 <!-- Qualification & Occupation -->
 <h2 class="text-2xl font-bold text-gray-700 pb-2 border-b-2 border-indigo-200 mb-6">{{ __('qualification_occupation') }}</h2>
