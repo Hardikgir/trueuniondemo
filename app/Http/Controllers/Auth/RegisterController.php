@@ -19,20 +19,27 @@ class RegisterController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'mobile_number' => ['required', 'string', 'max:20', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
-            'cropped_image' => ['nullable', 'string'], // Validate the base64 string
-            // ... other validation rules ...
+            'profile_image' => ['nullable', 'string'], // base64 string
+            'birth_day' => ['required', 'integer'],
+            'birth_month' => ['required', 'integer'],
+            'birth_year' => ['required', 'integer'],
+            'gender' => ['required', 'in:male,female'],
+            'highest_education_id' => ['nullable', 'integer', 'exists:highest_qualification_master,id'],
+            'education_id' => ['nullable', 'integer', 'exists:education_master,id'],
+            'occupation_id' => ['nullable', 'integer', 'exists:occupation_master,id'],
+            'employed_in' => ['nullable', 'string', 'in:Business,Defence,Government,Not Employed in,Private,Others'],
             'terms' => ['accepted'],
         ]);
 
         $imagePath = null;
         // 2. Handle the cropped image upload
-        if ($request->cropped_image) {
-            $imageData = $request->cropped_image;
+        if ($request->profile_image) {
+            $imageData = $request->profile_image;
             // Decode the base64 string
-            $image = str_replace('data:image/png;base64,', '', $imageData);
+            $image = str_replace('data:image/jpeg;base64,', '', $imageData);
             $image = str_replace(' ', '+', $image);
             // Generate a unique filename
-            $imageName = time().'.png';
+            $imageName = time().'.jpg';
             // Save the file to the public storage disk
             File::put(storage_path('app/public/profiles/'.$imageName), base64_decode($image));
             // Set the path to be stored in the database
@@ -40,14 +47,13 @@ class RegisterController extends Controller
         }
 
         // 3. Create the new user
-        $user = User::create([
-            'full_name' => $request->full_name,
-            'email' => $request->email,
-            'mobile_number' => $request->mobile_number,
+        $user = User::create(array_merge($request->except([
+            'password', 'terms', 'profile_image', 'birth_day', 'birth_month', 'birth_year', '_token'
+        ]), [
             'password' => Hash::make($request->password),
-            'profile_image' => $imagePath, // Save the image path
-            // ... add all other fields from your form here ...
-        ]);
+            'dob' => \Carbon\Carbon::createFromDate($request->birth_year, $request->birth_month, $request->birth_day)->format('Y-m-d'),
+            'profile_image' => $imagePath,
+        ]));
 
         // 4. Log the new user in
         Auth::login($user);

@@ -42,7 +42,7 @@
             <input type="hidden" name="profile_image" id="profile_image_data">
         </div>
 
-        @include('partials.user-form-fields', ['user' => new \App\Models\User])
+        @include('partials.user-form-fields', ['user' => $user, 'motherTongues' => $motherTongues, 'castes' => $castes, 'highest_qualifications' => $highest_qualifications, 'occupations' => $occupations])
 
         <!-- Final Step -->
         <div class="mt-8 border-t-2 border-white/50 pt-6">

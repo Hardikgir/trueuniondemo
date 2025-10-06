@@ -64,5 +64,70 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::resource('users', AdminUserController::class)->except(['show', 'create', 'store']);
     Route::resource('memberships', MembershipController::class);
+    
+    // Settings Routes
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('index');
+        
+        // Language Management
+        Route::get('/language', [\App\Http\Controllers\Admin\SettingsController::class, 'language'])->name('language');
+        Route::post('/language', [\App\Http\Controllers\Admin\SettingsController::class, 'storeLanguage'])->name('language.store');
+        Route::put('/language/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateLanguage'])->name('language.update');
+        Route::delete('/language/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteLanguage'])->name('language.delete');
+        
+        // Caste Management
+        Route::get('/caste', [\App\Http\Controllers\Admin\SettingsController::class, 'caste'])->name('caste');
+        Route::post('/caste', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCaste'])->name('caste.store');
+        Route::put('/caste/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCaste'])->name('caste.update');
+        Route::delete('/caste/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteCaste'])->name('caste.delete');
+        
+        // Highest Education Management
+        Route::get('/highest-education', [\App\Http\Controllers\Admin\SettingsController::class, 'highestEducation'])->name('highest-education');
+        Route::post('/highest-education', [\App\Http\Controllers\Admin\SettingsController::class, 'storeHighestEducation'])->name('highest-education.store');
+        Route::put('/highest-education/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateHighestEducation'])->name('highest-education.update');
+        Route::delete('/highest-education/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteHighestEducation'])->name('highest-education.delete');
+        
+        // Education Details Management
+        Route::get('/education-details', [\App\Http\Controllers\Admin\SettingsController::class, 'educationDetails'])->name('education-details');
+        Route::post('/education-details', [\App\Http\Controllers\Admin\SettingsController::class, 'storeEducationDetails'])->name('education-details.store');
+        Route::put('/education-details/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateEducationDetails'])->name('education-details.update');
+        Route::delete('/education-details/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteEducationDetails'])->name('education-details.delete');
+        
+        // Occupation Management
+        Route::get('/occupation', [\App\Http\Controllers\Admin\SettingsController::class, 'occupation'])->name('occupation');
+        Route::post('/occupation', [\App\Http\Controllers\Admin\SettingsController::class, 'storeOccupation'])->name('occupation.store');
+        Route::put('/occupation/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateOccupation'])->name('occupation.update');
+        Route::delete('/occupation/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteOccupation'])->name('occupation.delete');
+        
+        // Country Management
+        Route::get('/country', [\App\Http\Controllers\Admin\SettingsController::class, 'country'])->name('country');
+        Route::post('/country', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCountry'])->name('country.store');
+        Route::put('/country/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCountry'])->name('country.update');
+        Route::delete('/country/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteCountry'])->name('country.delete');
+        
+        // State Management
+        Route::get('/state', [\App\Http\Controllers\Admin\SettingsController::class, 'state'])->name('state');
+        Route::post('/state', [\App\Http\Controllers\Admin\SettingsController::class, 'storeState'])->name('state.store');
+        Route::put('/state/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateState'])->name('state.update');
+        Route::delete('/state/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteState'])->name('state.delete');
+        
+        // City Management
+        Route::get('/city', [\App\Http\Controllers\Admin\SettingsController::class, 'city'])->name('city');
+        Route::post('/city', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCity'])->name('city.store');
+        Route::put('/city/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCity'])->name('city.update');
+        Route::delete('/city/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteCity'])->name('city.delete');
+    });
 });
+
+// --- Dynamic Location Routes ---
+Route::post('/get-countries', [PageController::class, 'getCountries'])->name('getCountries');
+Route::post('/get-states', [PageController::class, 'getStates'])->name('getStates');
+Route::post('/get-cities', [PageController::class, 'getCities'])->name('getCities');
+
+// --- ADMIN PANEL ROUTES ---
+Route::get('/get-educations/{id}', [PageController::class, 'getEducations'])->name('get-educations');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::resource('users', AdminUserController::class)->except(['show', 'create', 'store']);
+    Route::resource('memberships', MembershipController::class);
+
 

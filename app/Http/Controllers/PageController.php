@@ -25,7 +25,23 @@ class PageController extends Controller
     {
         $motherTongues = MotherTongueMaster::where('status', 1)->get();
         $castes = CasteMaster::where('status', 1)->get();
-        return view('pages.signup', compact('motherTongues', 'castes'));
+        $highest_qualifications = DB::table('highest_qualification_master')->where('status', 1)->get();
+        $occupations = DB::table('occupation_master')->where('status', 1)->get();
+        $countries = DB::table('country_manage')->where('status', 1)->get();
+        
+        // Create a new user instance for the form
+        $user = new \App\Models\User();
+        
+        return view('pages.signup', compact('motherTongues', 'castes', 'highest_qualifications', 'occupations', 'countries', 'user'));
+    }
+
+    public function getEducations($id)
+    {
+        $educations = DB::table('education_master')
+            ->where('highest_qualification_id', $id)
+            ->where('status', 1)
+            ->get();
+        return response()->json($educations);
     }
 
     public function login()
@@ -162,6 +178,39 @@ class PageController extends Controller
         return view('pages.contact');
     }
     
+    public function getCountries(Request $request)
+    {
+        $countries = DB::table('country_manage')->where('status', 1)->get();
+        return response()->json($countries);
+    }
+
+    public function getStates(Request $request)
+    {
+        // Debug: Log the request data
+        \Log::info('getStates called with country_id: ' . $request->country_id);
+        
+        $states = DB::table('state_master')
+            ->where('country_id', $request->country_id)
+            ->where('is_visible', 1)
+            ->get();
+            
+        // Debug: Log the result
+        \Log::info('States found: ' . $states->count());
+        \Log::info('States data: ' . $states->toJson());
+        
+        return response()->json($states);
+    }
+
+    public function getCities(Request $request)
+    {
+        $cities = DB::table('city_master')
+            ->where('state_id', $request->state_id)
+            ->where('is_visible', 1)
+            ->orderBy('city_master', 'ASC')
+            ->get();
+        return response()->json($cities);
+    }
+
     public function dashboard()
     {
         $user = Auth::user();

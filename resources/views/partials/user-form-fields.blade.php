@@ -264,6 +264,51 @@ document.addEventListener('DOMContentLoaded', function () {
         const badge = createBadge(lang);
         container.appendChild(badge);
     });
+
+    // Dynamic education dropdowns
+    const highestEducationSelect = document.getElementById('highest_education_id');
+    const educationSelect = document.getElementById('education_id');
+    const oldEducationId = '{{ old('education_id', $user->education_id ?? '') }}';
+
+    function fetchEducations(highestEducationId, selectedEducationId = null) {
+        if (!highestEducationId) {
+            educationSelect.innerHTML = '<option value="">{{ __("Select Education Detail") }}</option>';
+            return;
+        }
+
+        fetch(`/get-educations/${highestEducationId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                educationSelect.innerHTML = '<option value="">{{ __("Select Education Detail") }}</option>';
+                data.forEach(education => {
+                    const option = document.createElement('option');
+                    option.value = education.id;
+                    option.textContent = education.name;
+                    if (selectedEducationId && education.id == selectedEducationId) {
+                        option.selected = true;
+                    }
+                    educationSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+    }
+
+    highestEducationSelect.addEventListener('change', function() {
+        fetchEducations(this.value);
+    });
+
+    // On page load, if a highest education is already selected, fetch the educations
+    const initialHighestEducationId = highestEducationSelect.value;
+    if (initialHighestEducationId) {
+        fetchEducations(initialHighestEducationId, oldEducationId);
+    }
 });
 </script>
 @endpush
@@ -272,20 +317,44 @@ document.addEventListener('DOMContentLoaded', function () {
 <h2 class="text-2xl font-bold text-gray-700 pb-2 border-b-2 border-indigo-200 mb-6">{{ __('qualification_occupation') }}</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
     <div>
-        <label for="highest_education" class="form-label">{{ __('highest_education') }} *</label>
-        <input type="text" name="highest_education" class="form-input" value="{{ old('highest_education', $user->highest_education) }}" required>
+        <label for="highest_education_id" class="form-label">{{ __('highest_education') }} *</label>
+        <select name="highest_education_id" id="highest_education_id" class="form-input" required>
+            <option value="">{{ __('Select Highest Education') }}</option>
+            @if(isset($highest_qualifications))
+                @foreach($highest_qualifications as $qualification)
+                    <option value="{{ $qualification->id }}" {{ old('highest_education_id', $user->highest_education_id ?? '') == $qualification->id ? 'selected' : '' }}>{{ $qualification->name }}</option>
+                @endforeach
+            @endif
+        </select>
     </div>
     <div>
-        <label for="education_details" class="form-label">{{ __('education_details') }} *</label>
-        <input type="text" id="education_details" name="education_details" class="form-input" value="{{ old('education_details', $user->education_details) }}" required>
+        <label for="education_id" class="form-label">{{ __('education_details') }} *</label>
+        <select name="education_id" id="education_id" class="form-input" required>
+            <option value="">{{ __('Select Education Detail') }}</option>
+        </select>
     </div>
     <div>
         <label for="employed_in" class="form-label">{{ __('employed_in') }}</label>
-        <input type="text" name="employed_in" class="form-input" value="{{ old('employed_in', $user->employed_in) }}">
+        <select name="employed_in" id="employed_in" class="form-input">
+            <option value="">{{ __('Select Employment Type') }}</option>
+            <option value="Business" {{ old('employed_in', $user->employed_in ?? '') == 'Business' ? 'selected' : '' }}>{{ __('Business') }}</option>
+            <option value="Defence" {{ old('employed_in', $user->employed_in ?? '') == 'Defence' ? 'selected' : '' }}>{{ __('Defence') }}</option>
+            <option value="Government" {{ old('employed_in', $user->employed_in ?? '') == 'Government' ? 'selected' : '' }}>{{ __('Government') }}</option>
+            <option value="Not Employed in" {{ old('employed_in', $user->employed_in ?? '') == 'Not Employed in' ? 'selected' : '' }}>{{ __('Not Employed in') }}</option>
+            <option value="Private" {{ old('employed_in', $user->employed_in ?? '') == 'Private' ? 'selected' : '' }}>{{ __('Private') }}</option>
+            <option value="Others" {{ old('employed_in', $user->employed_in ?? '') == 'Others' ? 'selected' : '' }}>{{ __('Others') }}</option>
+        </select>
     </div>
     <div>
-        <label for="occupation" class="form-label">{{ __('occupation') }}</label>
-        <input type="text" name="occupation" class="form-input" value="{{ old('occupation', $user->occupation) }}">
+        <label for="occupation_id" class="form-label">{{ __('occupation') }}</label>
+        <select name="occupation_id" id="occupation_id" class="form-input">
+            <option value="">{{ __('Select Occupation') }}</option>
+            @if(isset($occupations))
+                @foreach($occupations as $occupation)
+                    <option value="{{ $occupation->id }}" {{ old('occupation_id', $user->occupation_id ?? '') == $occupation->id ? 'selected' : '' }}>{{ $occupation->name }}</option>
+                @endforeach
+            @endif
+        </select>
     </div>
     <div class="lg:col-span-2">
         <label for="annual_income" class="form-label">{{ __('annual_income') }}</label>
@@ -298,16 +367,125 @@ document.addEventListener('DOMContentLoaded', function () {
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
     <div>
         <label for="country" class="form-label">{{ __('country') }} *</label>
-        <input type="text" name="country" class="form-input" value="{{ old('country', $user->country) }}" required>
+        <select name="country_id" id="country" class="form-input" required>
+            <option value="">{{ __('select_country') }}</option>
+        </select>
     </div>
     <div>
         <label for="state" class="form-label">{{ __('state') }} *</label>
-        <input type="text" id="state" name="state" class="form-input" value="{{ old('state', $user->state) }}" required>
+        <select name="state_id" id="state" class="form-input" required>
+            <option value="">{{ __('select_state') }}</option>
+        </select>
     </div>
     <div>
         <label for="city" class="form-label">{{ __('city') }} *</label>
-        <input type="text" id="city" name="city" class="form-input" value="{{ old('city', $user->city) }}" required>
+        <select name="city_id" id="city" class="form-input" required>
+            <option value="">{{ __('select_city') }}</option>
+        </select>
     </div>
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        var userCountryId = '{{ old('country_id', $user->country_id) }}';
+        var userStateId = '{{ old('state_id', $user->state_id) }}';
+        var userCityId = '{{ old('city_id', $user->city_id) }}';
+
+        // Fetch Countries
+        $.ajax({
+            url: '{{ route("getCountries") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            dataType: 'json',
+            success: function(data) {
+                $('#country').empty().append('<option value="">{{ __("select_country") }}</option>');
+                $.each(data, function(key, value) {
+                    var isSelected = value.id == userCountryId ? ' selected' : '';
+                    $('#country').append('<option value="' + value.id + '"' + isSelected + '>' + value.name + '</option>');
+                });
+                if (userCountryId) {
+                    $('#country').trigger('change');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching countries:', error);
+            }
+        });
+
+        $('#country').on('change', function() {
+            var countryId = $(this).val();
+            console.log('Country changed to:', countryId);
+            
+            if (countryId) {
+                $.ajax({
+                    url: '{{ route("getStates") }}',
+                    type: 'POST',
+                    data: {
+                        country_id: countryId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log('States response:', data);
+                        $('#state').empty().append('<option value="">{{ __("select_state") }}</option>');
+                        $.each(data, function(key, value) {
+                            var isSelected = value.id == userStateId ? ' selected' : '';
+                            $('#state').append('<option value="' + value.id + '"' + isSelected + '>' + value.name + '</option>');
+                        });
+                        
+                        if (userStateId) {
+                            $('#state').trigger('change');
+                            userStateId = null; // Use it only once
+                        } else {
+                             $('#city').empty().append('<option value="">{{ __("select_city") }}</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching states:', error);
+                        console.error('Response:', xhr.responseText);
+                    }
+                });
+            } else {
+                $('#state').empty().append('<option value="">{{ __("select_state") }}</option>');
+                $('#city').empty().append('<option value="">{{ __("select_city") }}</option>');
+            }
+        });
+
+        $('#state').on('change', function() {
+            var stateId = $(this).val();
+            if (stateId) {
+                $.ajax({
+                    url: '{{ route("getCities") }}',
+                    type: 'POST',
+                    data: {
+                        state_id: stateId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#city').empty().append('<option value="">{{ __("select_city") }}</option>');
+                        $.each(data, function(key, value) {
+                            var isSelected = value.id == userCityId ? ' selected' : '';
+                            $('#city').append('<option value="' + value.id + '"' + isSelected + '>' + value.city_master + '</option>');
+                        });
+                        if (userCityId) {
+                            userCityId = null; // Use it only once
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching cities:', error);
+                    }
+                });
+            } else {
+                $('#city').empty().append('<option value="">{{ __("select_city") }}</option>');
+            }
+        });
+
+    });
+</script>
+@endpush
     <div>
         <label for="mobile_number" class="form-label">{{ __('mobile_number') }} *</label>
         <input type="tel" id="mobile_number" name="mobile_number" class="form-input" value="{{ old('mobile_number', $user->mobile_number) }}" required>

@@ -18,6 +18,12 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->foreignId('highest_education_id')->nullable()->constrained('highest_qualification_master');
+            $table->foreignId('education_details_id')->nullable()->constrained('education_master');
+            $table->foreignId('occupation_id')->nullable()->constrained('occupation_master');
+            $table->foreignId('country_id')->nullable()->constrained('country_manage');
+            $table->foreignId('state_id')->nullable()->constrained('state_master');
+            $table->foreignId('city_id')->nullable()->constrained('city_master');
             $table->timestamps();
         });
 
