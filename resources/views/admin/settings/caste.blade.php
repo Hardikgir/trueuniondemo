@@ -7,9 +7,16 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Caste Management</h3>
-                    <div class="card-tools">
+                    <div>
+                        <!-- Filter Dropdown -->
+                        <select id="statusFilter" class="form-control d-inline-block w-auto mr-2">
+                            <option value="">All Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <!-- Add Button -->
                         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCasteModal">
                             <i class="fas fa-plus"></i> Add Caste
                         </button>
@@ -26,7 +33,7 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                        <table id="casteTable" class="table table-bordered table-striped">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -48,10 +55,12 @@
                                     </td>
                                     <td>{{ $caste->created_at ? \Carbon\Carbon::parse($caste->created_at)->format('Y-m-d H:i:s') : 'N/A' }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-warning" onclick="editCaste({{ $caste->id }}, '{{ addslashes($caste->title) }}', {{ $caste->status }})">
+                                        <button type="button" class="btn btn-sm btn-warning" 
+                                            onclick="editCaste({{ $caste->id }}, '{{ addslashes($caste->title) }}', {{ $caste->status }})">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteCaste({{ $caste->id }})">
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                            onclick="deleteCaste({{ $caste->id }})">
                                             <i class="fas fa-trash"></i> Delete
                                         </button>
                                     </td>
@@ -72,9 +81,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add New Caste</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <form action="{{ route('admin.settings.caste.store') }}" method="POST">
                 @csrf
@@ -106,9 +113,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Caste</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <form id="editCasteForm" method="POST">
                 @csrf
@@ -141,9 +146,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Delete Caste</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to delete this caste? This action cannot be undone.</p>
@@ -160,17 +163,53 @@
     </div>
 </div>
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+@endpush
+
+@push('scripts')
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
 <script>
+$(document).ready(function() {
+    // Initialize DataTable
+    var table = $('#casteTable').DataTable({
+        "pageLength": 10,
+        "ordering": true,
+        "searching": true,
+        "lengthChange": true,
+        "language": {
+            "search": "Search:",
+            "lengthMenu": "Show _MENU_ entries"
+        }
+    });
+
+    // Status Filter Functionality
+    $('#statusFilter').on('change', function () {
+        var value = $(this).val();
+        if (value) {
+            table.column(2).search(value).draw();
+        } else {
+            table.column(2).search('').draw();
+        }
+    });
+});
+
+// Edit Modal setup
 function editCaste(id, title, status) {
-    document.getElementById('edit_title').value = title;
-    document.getElementById('edit_status').value = status;
-    document.getElementById('editCasteForm').action = '/admin/settings/caste/' + id;
+    $('#edit_title').val(title);
+    $('#edit_status').val(status);
+    $('#editCasteForm').attr('action', '/admin/settings/caste/' + id);
     $('#editCasteModal').modal('show');
 }
 
+// Delete Modal setup
 function deleteCaste(id) {
-    document.getElementById('deleteCasteForm').action = '/admin/settings/caste/' + id;
+    $('#deleteCasteForm').attr('action', '/admin/settings/caste/' + id);
     $('#deleteCasteModal').modal('show');
 }
 </script>
+@endpush
 @endsection

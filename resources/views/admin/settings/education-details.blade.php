@@ -2,6 +2,25 @@
 
 @section('title', 'Education Details Management')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<style>
+.filter-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+.filter-section .form-group {
+    margin-bottom: 0.5rem;
+}
+.filter-buttons {
+    margin-top: 1rem;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -25,8 +44,36 @@
                         </div>
                     @endif
 
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <h5 class="mb-3"><i class="fas fa-filter"></i> Filter by Highest Qualification</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="filter_highest_qualification">Select Highest Qualification:</label>
+                                    <select class="form-control" id="filter_highest_qualification">
+                                        <option value="">Show All Education Details</option>
+                                        @foreach($highestQualifications as $qualification)
+                                            <option value="{{ $qualification->id }}">{{ $qualification->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <div>
+                                        <button type="button" class="btn btn-secondary" id="clear_filter">
+                                            <i class="fas fa-times"></i> Clear Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped" id="education-details-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -34,38 +81,9 @@
                                     <th>Highest Qualification</th>
                                     <th>Status</th>
                                     <th>Visible</th>
-                                    <th>Created At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($educationDetails as $detail)
-                                <tr>
-                                    <td>{{ $detail->id }}</td>
-                                    <td>{{ $detail->name }}</td>
-                                    <td>{{ $detail->highest_qualification_name }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ $detail->status ? 'success' : 'danger' }}">
-                                            {{ $detail->status ? 'Active' : 'Inactive' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-{{ $detail->is_visible ? 'success' : 'warning' }}">
-                                            {{ $detail->is_visible ? 'Visible' : 'Hidden' }}
-                                        </span>
-                                    </td>
-                                    <td>{{ isset($detail->created_at) && $detail->created_at ? \Carbon\Carbon::parse($detail->created_at)->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-warning" onclick="editEducationDetails({{ $detail->id }}, '{{ addslashes($detail->name) }}', {{ $detail->highest_qualification_id }}, {{ $detail->status }}, {{ $detail->is_visible }})">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteEducationDetails({{ $detail->id }})">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -88,17 +106,24 @@
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="name">Education Details Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="highest_qualification_id">Highest Qualification</label>
-                        <select class="form-control" id="highest_qualification_id" name="highest_qualification_id" required>
-                            <option value="">Select Highest Qualification</option>
+                        <label for="highest_education_id">Highest Education</label>
+                        <select class="form-control" id="highest_education_id" name="highest_education_id" required>
+                            <option value="">Select Highest Education</option>
                             @foreach($highestQualifications as $qualification)
                                 <option value="{{ $qualification->id }}">{{ $qualification->name }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="education_details_id">Education Details</label>
+                        <select class="form-control" id="education_details_id" name="education_details_id" disabled>
+                            <option value="">Please select Highest Education first</option>
+                        </select>
+                        <small class="form-text text-muted">Select a Highest Education to see available Education Details</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Education Details Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
                     </div>
                     <div class="form-group">
                         <label for="status">Status</label>
@@ -139,17 +164,24 @@
                 @method('PUT')
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="edit_name">Education Details Name</label>
-                        <input type="text" class="form-control" id="edit_name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_highest_qualification_id">Highest Qualification</label>
-                        <select class="form-control" id="edit_highest_qualification_id" name="highest_qualification_id" required>
-                            <option value="">Select Highest Qualification</option>
+                        <label for="edit_highest_education_id">Highest Education</label>
+                        <select class="form-control" id="edit_highest_education_id" name="highest_education_id" required>
+                            <option value="">Select Highest Education</option>
                             @foreach($highestQualifications as $qualification)
                                 <option value="{{ $qualification->id }}">{{ $qualification->name }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_education_details_id">Education Details</label>
+                        <select class="form-control" id="edit_education_details_id" name="education_details_id" disabled>
+                            <option value="">Please select Highest Education first</option>
+                        </select>
+                        <small class="form-text text-muted">Select a Highest Education to see available Education Details</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_name">Education Details Name</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
                     </div>
                     <div class="form-group">
                         <label for="edit_status">Status</label>
@@ -200,19 +232,222 @@
     </div>
 </div>
 
+@push('scripts')
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script>
-function editEducationDetails(id, name, highestQualificationId, status, isVisible) {
-    document.getElementById('edit_name').value = name;
-    document.getElementById('edit_highest_qualification_id').value = highestQualificationId;
-    document.getElementById('edit_status').value = status;
-    document.getElementById('edit_is_visible').value = isVisible;
-    document.getElementById('editEducationDetailsForm').action = '/admin/settings/education-details/' + id;
-    $('#editEducationDetailsModal').modal('show');
-}
+$(document).ready(function() {
+    var table = $('#education-details-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route('admin.settings.education-details') }}',
+            data: function(d) {
+                d.highest_qualification_filter = $('#filter_highest_qualification').val();
+            }
+        },
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'name', name: 'name' },
+            { data: 'highest_qualification_name', name: 'highest_qualification_name' },
+            {
+                data: 'status',
+                name: 'status',
+                render: function(data, type, row) {
+                    return '<span class="badge badge-' + (data ? 'success' : 'danger') + '">' + (data ? 'Active' : 'Inactive') + '</span>';
+                }
+            },
+            {
+                data: 'is_visible',
+                name: 'is_visible',
+                render: function(data, type, row) {
+                    return '<span class="badge badge-' + (data ? 'success' : 'warning') + '">' + (data ? 'Visible' : 'Hidden') + '</span>';
+                }
+            },
+            {
+                data: null,
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    return '<button type="button" class="btn btn-sm btn-warning edit-btn" data-id="' + row.id + '" data-name="' + row.name + '" data-highest_qualification_id="' + row.highest_qualification_id + '" data-status="' + row.status + '" data-is_visible="' + row.is_visible + '"><i class="fas fa-edit"></i> Edit</button> ' +
+                           '<button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' + row.id + '"><i class="fas fa-trash"></i> Delete</button>';
+                }
+            }
+        ]
+    });
 
-function deleteEducationDetails(id) {
-    document.getElementById('deleteEducationDetailsForm').action = '/admin/settings/education-details/' + id;
-    $('#deleteEducationDetailsModal').modal('show');
-}
+    // Filter functionality - Single filter for Highest Qualification
+    $('#clear_filter').on('click', function() {
+        $('#filter_highest_qualification').val('');
+        table.ajax.reload();
+    });
+
+    // Auto-apply filter when dropdown changes
+    $('#filter_highest_qualification').on('change', function() {
+        var selectedText = $(this).find('option:selected').text();
+        if ($(this).val()) {
+            console.log('Filtering by: ' + selectedText);
+        } else {
+            console.log('Showing all education details');
+        }
+        table.ajax.reload();
+    });
+
+    // Dynamic dropdown functionality for Create modal
+    $('#highest_education_id').on('change', function() {
+        var qualificationId = $(this).val();
+        var educationDetailsSelect = $('#education_details_id');
+        
+        // Clear and disable education details dropdown
+        educationDetailsSelect.empty().prop('disabled', true);
+        
+        if (qualificationId) {
+            // Show loading state
+            educationDetailsSelect.append('<option value="">Loading...</option>');
+            
+            // Fetch education details via AJAX
+            $.ajax({
+                url: '{{ route("admin.settings.education-details.by-qualification", ":id") }}'.replace(':id', qualificationId),
+                type: 'GET',
+                success: function(response) {
+                    educationDetailsSelect.empty();
+                    
+                    if (response.success && response.data.length > 0) {
+                        educationDetailsSelect.append('<option value="">Select Education Details</option>');
+                        $.each(response.data, function(index, item) {
+                            educationDetailsSelect.append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                        educationDetailsSelect.prop('disabled', false);
+                    } else {
+                        educationDetailsSelect.append('<option value="">No education details found</option>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    educationDetailsSelect.empty();
+                    educationDetailsSelect.append('<option value="">Error loading education details</option>');
+                    console.error('Error:', error);
+                }
+            });
+        } else {
+            educationDetailsSelect.append('<option value="">Please select Highest Education first</option>');
+        }
+    });
+
+    // Dynamic dropdown functionality for Edit modal
+    $('#edit_highest_education_id').on('change', function() {
+        var qualificationId = $(this).val();
+        var educationDetailsSelect = $('#edit_education_details_id');
+        
+        // Clear and disable education details dropdown
+        educationDetailsSelect.empty().prop('disabled', true);
+        
+        if (qualificationId) {
+            // Show loading state
+            educationDetailsSelect.append('<option value="">Loading...</option>');
+            
+            // Fetch education details via AJAX
+            $.ajax({
+                url: '{{ route("admin.settings.education-details.by-qualification", ":id") }}'.replace(':id', qualificationId),
+                type: 'GET',
+                success: function(response) {
+                    educationDetailsSelect.empty();
+                    
+                    if (response.success && response.data.length > 0) {
+                        educationDetailsSelect.append('<option value="">Select Education Details</option>');
+                        $.each(response.data, function(index, item) {
+                            educationDetailsSelect.append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                        educationDetailsSelect.prop('disabled', false);
+                    } else {
+                        educationDetailsSelect.append('<option value="">No education details found</option>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    educationDetailsSelect.empty();
+                    educationDetailsSelect.append('<option value="">Error loading education details</option>');
+                    console.error('Error:', error);
+                }
+            });
+        } else {
+            educationDetailsSelect.append('<option value="">Please select Highest Education first</option>');
+        }
+    });
+
+    // Edit button click handler
+    $('#education-details-table').on('click', '.edit-btn', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var highestQualificationId = $(this).data('highest_qualification_id');
+        var status = $(this).data('status');
+        var isVisible = $(this).data('is_visible');
+
+        $('#edit_name').val(name);
+        $('#edit_highest_education_id').val(highestQualificationId);
+        $('#edit_status').val(status);
+        $('#edit_is_visible').val(isVisible);
+        
+        // Trigger change event to load education details
+        $('#edit_highest_education_id').trigger('change');
+        
+        $('#editEducationDetailsForm').attr('action', '/admin/settings/education-details/' + id);
+        $('#editEducationDetailsModal').modal('show');
+    });
+
+    // Delete button click handler
+    $('#education-details-table').on('click', '.delete-btn', function() {
+        var id = $(this).data('id');
+        $('#deleteEducationDetailsForm').attr('action', '/admin/settings/education-details/' + id);
+        $('#deleteEducationDetailsModal').modal('show');
+    });
+
+    // Reset form when modal is closed
+    $('#addEducationDetailsModal').on('hidden.bs.modal', function() {
+        $('#addEducationDetailsModal form')[0].reset();
+        $('#education_details_id').empty().prop('disabled', true).append('<option value="">Please select Highest Education first</option>');
+    });
+
+    $('#editEducationDetailsModal').on('hidden.bs.modal', function() {
+        $('#editEducationDetailsModal form')[0].reset();
+        $('#edit_education_details_id').empty().prop('disabled', true).append('<option value="">Please select Highest Education first</option>');
+    });
+
+    // Form validation for Create modal
+    $('#addEducationDetailsModal form').on('submit', function(e) {
+        var highestEducationId = $('#highest_education_id').val();
+        var educationDetailsId = $('#education_details_id').val();
+        var name = $('#name').val().trim();
+        
+        if (!highestEducationId) {
+            e.preventDefault();
+            alert('Please select a Highest Education.');
+            return false;
+        }
+        
+        if (!name) {
+            e.preventDefault();
+            alert('Please enter Education Details Name.');
+            return false;
+        }
+    });
+
+    // Form validation for Edit modal
+    $('#editEducationDetailsModal form').on('submit', function(e) {
+        var highestEducationId = $('#edit_highest_education_id').val();
+        var name = $('#edit_name').val().trim();
+        
+        if (!highestEducationId) {
+            e.preventDefault();
+            alert('Please select a Highest Education.');
+            return false;
+        }
+        
+        if (!name) {
+            e.preventDefault();
+            alert('Please enter Education Details Name.');
+            return false;
+        }
+    });
+});
 </script>
+@endpush
 @endsection

@@ -2,6 +2,10 @@
 
 @section('title', 'Highest Education Management')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -26,44 +30,16 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped" id="highest-education-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Name</th>
                                     <th>Status</th>
                                     <th>Visible</th>
-                                    <th>Created At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($highestEducations as $education)
-                                <tr>
-                                    <td>{{ $education->id }}</td>
-                                    <td>{{ $education->name }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ $education->status ? 'success' : 'danger' }}">
-                                            {{ $education->status ? 'Active' : 'Inactive' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-{{ $education->is_visible ? 'success' : 'warning' }}">
-                                            {{ $education->is_visible ? 'Visible' : 'Hidden' }}
-                                        </span>
-                                    </td>
-                                    <td>{{ isset($education->created_at) && $education->created_at ? \Carbon\Carbon::parse($education->created_at)->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-warning" onclick="editHighestEducation({{ $education->id }}, '{{ addslashes($education->name) }}', {{ $education->status }}, {{ $education->is_visible }})">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteHighestEducation({{ $education->id }})">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -180,18 +156,65 @@
     </div>
 </div>
 
+@push('scripts')
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script>
-function editHighestEducation(id, name, status, isVisible) {
-    document.getElementById('edit_name').value = name;
-    document.getElementById('edit_status').value = status;
-    document.getElementById('edit_is_visible').value = isVisible;
-    document.getElementById('editHighestEducationForm').action = '/admin/settings/highest-education/' + id;
-    $('#editHighestEducationModal').modal('show');
-}
+$(document).ready(function() {
+    var table = $('#highest-education-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route('admin.settings.highest-education') }}',
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'name', name: 'name' },
+            {
+                data: 'status',
+                name: 'status',
+                render: function(data, type, row) {
+                    return '<span class="badge badge-' + (data ? 'success' : 'danger') + '">' + (data ? 'Active' : 'Inactive') + '</span>';
+                }
+            },
+            {
+                data: 'is_visible',
+                name: 'is_visible',
+                render: function(data, type, row) {
+                    return '<span class="badge badge-' + (data ? 'success' : 'warning') + '">' + (data ? 'Visible' : 'Hidden') + '</span>';
+                }
+            },
+            {
+                data: null,
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    return '<button type="button" class="btn btn-sm btn-warning edit-btn" data-id="' + row.id + '" data-name="' + row.name + '" data-status="' + row.status + '" data-is_visible="' + row.is_visible + '"><i class="fas fa-edit"></i> Edit</button> ' +
+                           '<button type="button" class="btn btn-sm btn-danger delete-btn" data-id="' + row.id + '"><i class="fas fa-trash"></i> Delete</button>';
+                }
+            }
+        ]
+    });
 
-function deleteHighestEducation(id) {
-    document.getElementById('deleteHighestEducationForm').action = '/admin/settings/highest-education/' + id;
-    $('#deleteHighestEducationModal').modal('show');
-}
+    // Edit button click handler
+    $('#highest-education-table').on('click', '.edit-btn', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var status = $(this).data('status');
+        var isVisible = $(this).data('is_visible');
+
+        $('#edit_name').val(name);
+        $('#edit_status').val(status);
+        $('#edit_is_visible').val(isVisible);
+        $('#editHighestEducationForm').attr('action', '/admin/settings/highest-education/' + id);
+        $('#editHighestEducationModal').modal('show');
+    });
+
+    // Delete button click handler
+    $('#highest-education-table').on('click', '.delete-btn', function() {
+        var id = $(this).data('id');
+        $('#deleteHighestEducationForm').attr('action', '/admin/settings/highest-education/' + id);
+        $('#deleteHighestEducationModal').modal('show');
+    });
+});
 </script>
+@endpush
 @endsection

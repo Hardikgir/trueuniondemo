@@ -2,6 +2,10 @@
 
 @section('title', 'Occupation Management')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -26,7 +30,7 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped" id="occupations-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -179,8 +183,24 @@
         </div>
     </div>
 </div>
+@endsection
 
+@push('scripts')
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
 <script>
+$(document).ready(function() {
+    $('#occupations-table').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+    });
+});
+
 function editOccupation(id, name, status, isVisible) {
     document.getElementById('edit_name').value = name;
     document.getElementById('edit_status').value = status;
@@ -194,4 +214,4 @@ function deleteOccupation(id) {
     $('#deleteOccupationModal').modal('show');
 }
 </script>
-@endsection
+@endpush

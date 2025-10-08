@@ -93,6 +93,9 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         Route::put('/education-details/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateEducationDetails'])->name('education-details.update');
         Route::delete('/education-details/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteEducationDetails'])->name('education-details.delete');
         
+        // AJAX route for fetching education details by highest qualification
+        Route::get('/education-details-by-qualification/{qualificationId}', [\App\Http\Controllers\Admin\SettingsController::class, 'getEducationDetailsByQualification'])->name('education-details.by-qualification');
+        
         // Occupation Management
         Route::get('/occupation', [\App\Http\Controllers\Admin\SettingsController::class, 'occupation'])->name('occupation');
         Route::post('/occupation', [\App\Http\Controllers\Admin\SettingsController::class, 'storeOccupation'])->name('occupation.store');
@@ -111,11 +114,17 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         Route::put('/state/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateState'])->name('state.update');
         Route::delete('/state/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteState'])->name('state.delete');
         
+        // AJAX route for fetching states by country
+        Route::get('/states-by-country/{countryId}', [\App\Http\Controllers\Admin\SettingsController::class, 'getStatesByCountry'])->name('states.by-country');
+        
         // City Management
         Route::get('/city', [\App\Http\Controllers\Admin\SettingsController::class, 'city'])->name('city');
         Route::post('/city', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCity'])->name('city.store');
         Route::put('/city/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCity'])->name('city.update');
         Route::delete('/city/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteCity'])->name('city.delete');
+        
+        // AJAX route for fetching cities by state
+        Route::get('/cities-by-state/{stateId}', [\App\Http\Controllers\Admin\SettingsController::class, 'getCitiesByState'])->name('cities.by-state');
     });
 });
 

@@ -2,6 +2,10 @@
 
 @section('title', 'Country Management')
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -26,7 +30,7 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped" id="countriesTable">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -179,20 +183,28 @@
         </div>
     </div>
 </div>
-
-<script>
-function editCountry(id, name, sortname, phoneCode, status) {
-    document.getElementById('edit_name').value = name;
-    document.getElementById('edit_sortname').value = sortname;
-    document.getElementById('edit_phone_code').value = phoneCode;
-    document.getElementById('edit_status').value = status;
-    document.getElementById('editCountryForm').action = '/admin/settings/country/' + id;
-    $('#editCountryModal').modal('show');
-}
-
-function deleteCountry(id) {
-    document.getElementById('deleteCountryForm').action = '/admin/settings/country/' + id;
-    $('#deleteCountryModal').modal('show');
-}
-</script>
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#countriesTable').DataTable();
+        });
+
+        function editCountry(id, name, sortname, phoneCode, status) {
+            document.getElementById('edit_name').value = name;
+            document.getElementById('edit_sortname').value = sortname;
+            document.getElementById('edit_phone_code').value = phoneCode;
+            document.getElementById('edit_status').value = status;
+            document.getElementById('editCountryForm').action = '/admin/settings/country/' + id;
+            $('#editCountryModal').modal('show');
+        }
+
+        function deleteCountry(id) {
+            document.getElementById('deleteCountryForm').action = '/admin/settings/country/' + id;
+            $('#deleteCountryModal').modal('show');
+        }
+    </script>
+@endpush
