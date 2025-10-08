@@ -11,17 +11,29 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title">Language Management</h3>
-                    <div>
-                        <select id="statusFilter" class="form-control d-inline-block w-auto mr-2">
-                            <option value="">All Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="card-title">Language Management</h3>
                         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addLanguageModal">
                             <i class="fas fa-plus"></i> Add Language
                         </button>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <label for="entriesPerPage" class="mr-2">Show</label>
+                            <select id="entriesPerPage" class="form-control d-inline-block w-auto mr-2">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span>entries</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <label for="searchInput" class="mr-2">Search:</label>
+                            <input type="text" id="searchInput" class="form-control d-inline-block w-auto" placeholder="Search languages...">
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -176,22 +188,23 @@ $(document).ready(function() {
     var table = $('#languageTable').DataTable({
         "pageLength": 10,
         "ordering": true,
-        "searching": true,
-        "lengthChange": true,
+        "searching": false, // Disable default search since we have custom search
+        "lengthChange": false, // Disable default length change since we have custom control
+        "info": true,
+        "paging": true,
         "language": {
-            "search": "Search Language:",
             "lengthMenu": "Show _MENU_ entries per page"
         }
     });
 
-    // Filter by status
-    $('#statusFilter').on('change', function () {
-        var value = $(this).val();
-        if (value) {
-            table.column(2).search(value).draw();
-        } else {
-            table.column(2).search(' ').draw();
-        }
+    // Custom search functionality
+    $('#searchInput').on('keyup', function () {
+        table.search(this.value).draw();
+    });
+
+    // Custom entries per page functionality
+    $('#entriesPerPage').on('change', function () {
+        table.page.len(parseInt(this.value)).draw();
     });
 });
 
