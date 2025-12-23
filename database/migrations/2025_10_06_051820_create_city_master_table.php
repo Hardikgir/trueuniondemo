@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('city_master', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
+            $table->string('city_master')->nullable();
             $table->foreignId('state_id')->constrained('state_master')->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->tinyInteger('is_visible')->default(1);
             $table->timestamps();
         });
     }

@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('country_manage', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('sortname', 3)->nullable();
+            $table->string('phone_code', 11)->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

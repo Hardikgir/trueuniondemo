@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('education_master', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->foreignId('highest_qualification_id')->nullable()->constrained('highest_qualification_master')->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->tinyInteger('is_visible')->default(1);
             $table->timestamps();
         });
     }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('country_id')->constrained('country_manage')->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->tinyInteger('is_visible')->default(1);
             $table->timestamps();
         });
     }
