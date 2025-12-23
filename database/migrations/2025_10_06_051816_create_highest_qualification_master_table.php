@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('highest_qualification_master');
         Schema::create('highest_qualification_master', function (Blueprint $table) {
             $table->id();
             $table->string('name');

@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('state_master', function (Blueprint $table) {
+        Schema::dropIfExists('nakshatra_master');
+        Schema::create('nakshatra_master', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('country_id')->constrained('country_manage')->onDelete('cascade');
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->tinyInteger('is_visible')->default(1);
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('state_master');
+        Schema::dropIfExists('nakshatra_master');
     }
 };

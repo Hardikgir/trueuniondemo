@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -19,28 +20,37 @@ class LoginController extends Controller
         // 1. Validate the incoming request data
         $credentials = $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required'],
-            'remember' => ['nullable', 'boolean'], // Validate the "Remember Me" field
+            'password' => ['required', 'string'],
+            'remember' => ['nullable'],
         ]);
+        
+        // Convert remember checkbox value to boolean
+        // HTML checkboxes send "on" when checked, or nothing when unchecked
+        $remember = $request->has('remember') && $request->remember === 'on';
 
         // 2. Attempt to authenticate the user
-        // We use the 'remember' value from the form to persist the session.
-        if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $request->boolean('remember'))) {
-            // If authentication is successful, regenerate the session to prevent session fixation attacks.
+        if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $remember)) {
+            // Regenerate session to prevent session fixation attacks
             $request->session()->regenerate();
 
-            // 3. Redirect the user based on their role
-            if (Auth::user()->role === 'admin') {
-                // If the user is an admin, redirect them to the admin dashboard.
-                return redirect()->intended(route('admin.dashboard'));
+            // 3. Get the authenticated user and check their role
+            $user = Auth::user();
+            
+            // Ensure we have fresh data from database
+            $user->refresh();
+            
+            // 4. Redirect based on user role
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard')
+                    ->with('success', 'Welcome back, Admin!');
             }
 
-            // For all other users, redirect to the standard user dashboard.
-            return redirect()->intended(route('dashboard'));
+                // Regular users go to their dashboard
+                return redirect()->route('dashboard')
+                    ->with('success', 'Welcome back!');
         }
 
-        // 4. If authentication fails, redirect back to the login page
-        // with an error message and the email they entered.
+        // 5. Authentication failed - return with error
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');

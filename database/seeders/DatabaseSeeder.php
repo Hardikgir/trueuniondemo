@@ -16,13 +16,16 @@ class DatabaseSeeder extends Seeder
         $this->call([
             MotherTongueMasterSeeder::class,
             CasteMasterSeeder::class,
+            RaashiMasterSeeder::class,
+            NakshatraMasterSeeder::class,
+            AdminUserSeeder::class,
         ]);
 
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
     }
 }

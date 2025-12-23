@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('occupation_master');
-        Schema::create('occupation_master', function (Blueprint $table) {
+        Schema::dropIfExists('country_manage');
+        Schema::create('country_manage', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('sortname', 3)->nullable();
+            $table->string('phone_code', 11)->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->tinyInteger('is_visible')->default(1);
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('occupation_master');
+        Schema::dropIfExists('country_manage');
     }
 };

@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('occupation_master');
-        Schema::create('occupation_master', function (Blueprint $table) {
+        Schema::dropIfExists('caste_master');
+        Schema::create('caste_master', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->tinyInteger('is_visible')->default(1);
+            $table->string('title');
+            $table->integer('status')->default(1);
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('occupation_master');
+        Schema::dropIfExists('caste_master');
     }
 };

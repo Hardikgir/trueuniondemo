@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
@@ -41,8 +43,12 @@ Route::get('/search', [PageController::class, 'search'])->name('search');
 Route::middleware('guest')->group(function () {
     Route::get('/signup', [PageController::class, 'signup'])->name('signup');
     Route::post('/signup', [RegisterController::class, 'store'])->name('signup.store');
-    Route::get('/login', [PageController::class, 'login'])->name('login');
+    Route::get('/login', [PageController::class, 'home'])->name('login'); // Login page uses home view
     Route::post('/login', [LoginController::class, 'authenticate'])->name('login.store');
+    
+    // OTP Routes
+    Route::post('/otp/send', [\App\Http\Controllers\Auth\OtpController::class, 'sendOtp'])->name('otp.send');
+    Route::post('/otp/verify', [\App\Http\Controllers\Auth\OtpController::class, 'verifyOtp'])->name('otp.verify');
 });
 
 // --- Google Auth Routes ---
@@ -52,10 +58,15 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 // --- Authenticated User Routes ---
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [PageController::class, 'dashboard'])->name('dashboard');
+    Route::get('/matches', [PageController::class, 'matches'])->name('matches');
+    Route::get('/requests', [PageController::class, 'requests'])->name('requests');
+    Route::post('/requests/{id}/accept', [PageController::class, 'acceptRequest'])->name('requests.accept');
+    Route::post('/requests/{id}/decline', [PageController::class, 'declineRequest'])->name('requests.decline');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/{id}', [PageController::class, 'viewProfile'])->name('profile.view');
+    Route::post('/profile/{id}/send-interest', [PageController::class, 'sendInterest'])->name('profile.send-interest');
     Route::post('/subscribe/{membership}', [SubscriptionController::class, 'subscribe'])->name('subscribe');
 });
 
@@ -133,10 +144,292 @@ Route::post('/get-countries', [PageController::class, 'getCountries'])->name('ge
 Route::post('/get-states', [PageController::class, 'getStates'])->name('getStates');
 Route::post('/get-cities', [PageController::class, 'getCities'])->name('getCities');
 
-// --- ADMIN PANEL ROUTES ---
+// --- TEMPORARY: Add missing columns to users table ---
+// TODO: Remove this route after running once
+Route::get('/fix-users-table', function () {
+    try {
+        $existingColumns = [];
+        $columns = DB::select("SHOW COLUMNS FROM users");
+        foreach ($columns as $column) {
+            $existingColumns[] = $column->Field;
+        }
+
+        $output = "<h2>Current columns in users table:</h2><ul>";
+        foreach ($existingColumns as $col) {
+            $output .= "<li>{$col}</li>";
+        }
+        $output .= "</ul><hr>";
+
+        $added = [];
+        $skipped = [];
+        $errors = [];
+
+        // Add basic columns
+        $columnsToAdd = [
+            'full_name' => "ALTER TABLE `users` ADD COLUMN `full_name` VARCHAR(255) NULL AFTER `name`",
+            'profile_image' => "ALTER TABLE `users` ADD COLUMN `profile_image` VARCHAR(255) NULL",
+            'gender' => "ALTER TABLE `users` ADD COLUMN `gender` VARCHAR(255) NULL",
+            'height' => "ALTER TABLE `users` ADD COLUMN `height` VARCHAR(255) NULL",
+            'weight' => "ALTER TABLE `users` ADD COLUMN `weight` VARCHAR(255) NULL",
+            'dob' => "ALTER TABLE `users` ADD COLUMN `dob` DATE NULL",
+            'birth_time' => "ALTER TABLE `users` ADD COLUMN `birth_time` VARCHAR(255) NULL",
+            'birth_place' => "ALTER TABLE `users` ADD COLUMN `birth_place` VARCHAR(255) NULL",
+            'raashi' => "ALTER TABLE `users` ADD COLUMN `raashi` VARCHAR(255) NULL",
+            'caste' => "ALTER TABLE `users` ADD COLUMN `caste` VARCHAR(255) NULL",
+            'nakshtra' => "ALTER TABLE `users` ADD COLUMN `nakshtra` VARCHAR(255) NULL",
+            'naadi' => "ALTER TABLE `users` ADD COLUMN `naadi` VARCHAR(255) NULL",
+            'marital_status' => "ALTER TABLE `users` ADD COLUMN `marital_status` VARCHAR(255) NULL",
+            'mother_tongue' => "ALTER TABLE `users` ADD COLUMN `mother_tongue` VARCHAR(255) NULL",
+            'physically_handicap' => "ALTER TABLE `users` ADD COLUMN `physically_handicap` VARCHAR(255) NULL",
+            'diet' => "ALTER TABLE `users` ADD COLUMN `diet` VARCHAR(255) NULL",
+            'languages_known' => "ALTER TABLE `users` ADD COLUMN `languages_known` TEXT NULL",
+            'employed_in' => "ALTER TABLE `users` ADD COLUMN `employed_in` VARCHAR(255) NULL",
+            'annual_income' => "ALTER TABLE `users` ADD COLUMN `annual_income` VARCHAR(255) NULL",
+            'mobile_number' => "ALTER TABLE `users` ADD COLUMN `mobile_number` VARCHAR(255) NULL",
+            'google_id' => "ALTER TABLE `users` ADD COLUMN `google_id` VARCHAR(255) NULL",
+            'role' => "ALTER TABLE `users` ADD COLUMN `role` ENUM('user', 'admin') DEFAULT 'user'",
+        ];
+
+        foreach ($columnsToAdd as $columnName => $sql) {
+            if (in_array($columnName, $existingColumns)) {
+                $skipped[] = $columnName;
+                continue;
+            }
+            try {
+                DB::statement($sql);
+                $added[] = $columnName;
+            } catch (\Exception $e) {
+                $errorMsg = $e->getMessage();
+                if (strpos($errorMsg, 'Duplicate column name') !== false) {
+                    $skipped[] = $columnName;
+                } else {
+                    $errors[] = "{$columnName}: {$errorMsg}";
+                }
+            }
+        }
+
+        // Add unique constraint for mobile_number if column was just added
+        if (in_array('mobile_number', $added)) {
+            try {
+                DB::statement("ALTER TABLE `users` ADD UNIQUE INDEX `users_mobile_number_unique` (`mobile_number`)");
+            } catch (\Exception $e) {
+                // Ignore if constraint already exists
+            }
+        }
+
+        // Add unique constraint for google_id if column was just added
+        if (in_array('google_id', $added)) {
+            try {
+                DB::statement("ALTER TABLE `users` ADD UNIQUE INDEX `users_google_id_unique` (`google_id`)");
+            } catch (\Exception $e) {
+                // Ignore if constraint already exists
+            }
+        }
+
+        // Add foreign key columns if missing
+        $foreignKeys = [
+            'highest_education_id' => 'highest_qualification_master',
+            'occupation_id' => 'occupation_master',
+            'country_id' => 'country_manage',
+            'state_id' => 'state_master',
+            'city_id' => 'city_master',
+        ];
+
+        foreach ($foreignKeys as $columnName => $referencedTable) {
+            if (in_array($columnName, $existingColumns)) {
+                $skipped[] = $columnName;
+                continue;
+            }
+            try {
+                // Check if referenced table exists
+                $tableExists = DB::select("SHOW TABLES LIKE '{$referencedTable}'");
+                if (empty($tableExists)) {
+                    $errors[] = "{$columnName}: Referenced table '{$referencedTable}' does not exist";
+                    continue;
+                }
+
+                Schema::table('users', function ($table) use ($columnName, $referencedTable) {
+                    $table->foreignId($columnName)->nullable()->constrained($referencedTable)->onDelete('set null');
+                });
+                $added[] = $columnName;
+            } catch (\Exception $e) {
+                $errorMsg = $e->getMessage();
+                if (strpos($errorMsg, 'Duplicate column name') !== false || 
+                    strpos($errorMsg, 'already exists') !== false) {
+                    $skipped[] = $columnName;
+                } else {
+                    $errors[] = "{$columnName}: {$errorMsg}";
+                }
+            }
+        }
+
+        $output .= "<h2>Results:</h2>";
+        $output .= "<p><strong>Added:</strong> " . (empty($added) ? 'None' : implode(', ', $added)) . "</p>";
+        $output .= "<p><strong>Skipped (already exist):</strong> " . (empty($skipped) ? 'None' : implode(', ', $skipped)) . "</p>";
+        if (!empty($errors)) {
+            $output .= "<p><strong>Errors:</strong></p><ul>";
+            foreach ($errors as $error) {
+                $output .= "<li>{$error}</li>";
+            }
+            $output .= "</ul>";
+        }
+
+        return response($output, 200)->header('Content-Type', 'text/html');
+    } catch (\Exception $e) {
+        return response("Error: " . $e->getMessage() . "<br><pre>" . $e->getTraceAsString() . "</pre>", 500)
+            ->header('Content-Type', 'text/html');
+    }
+})->name('fix.users.table');
+
+// --- TEMPORARY: Check and fix user role ---
+Route::get('/check-role/{email}', function ($email) {
+    $user = \App\Models\User::where('email', $email)->first();
+    if (!$user) {
+        return response("User not found", 404);
+    }
+    
+    // Get raw database value
+    $rawRole = DB::table('users')->where('email', $email)->value('role');
+    $currentRole = $user->role;
+    
+    // Force update directly in database
+    DB::table('users')->where('email', $email)->update(['role' => 'user']);
+    
+    // Refresh and verify
+    $user->refresh();
+    $newRawRole = DB::table('users')->where('email', $email)->value('role');
+    
+    // Clear any cached sessions for this user
+    DB::table('sessions')->where('user_id', $user->id)->delete();
+    
+    return response("User: {$email}<br>" .
+        "Raw DB role (before): " . ($rawRole ?? 'NULL') . "<br>" .
+        "Model role (before): " . ($currentRole ?? 'NULL') . "<br>" .
+        "Raw DB role (after): " . ($newRawRole ?? 'NULL') . "<br>" .
+        "Model role (after): " . $user->role . "<br><br>" .
+        "Sessions cleared. Please log out and log back in.", 200)
+        ->header('Content-Type', 'text/html');
+})->name('check.role');
+
+// --- TEMPORARY: Reset user password ---
+Route::get('/reset-password/{email}', function ($email) {
+    $user = \App\Models\User::where('email', $email)->first();
+    if (!$user) {
+        return response("User not found", 404);
+    }
+    
+    // Get old password hash for comparison
+    $oldHash = $user->getAttributes()['password'] ?? 'N/A';
+    
+    // Set a new password (will be auto-hashed by Laravel's 'hashed' cast)
+    $newPassword = 'Password123'; // Change this to the desired password
+    
+    // Set password directly - Laravel's 'hashed' cast will handle it
+    $user->password = $newPassword;
+    $user->save();
+    
+    // Refresh to get the new hash
+    $user->refresh();
+    $newHash = $user->getAttributes()['password'];
+    
+    // Verify the password was hashed correctly
+    $isHashed = \Illuminate\Support\Facades\Hash::check($newPassword, $newHash);
+    
+    // Test Auth::attempt (logout first to clear any existing session)
+    \Illuminate\Support\Facades\Auth::logout();
+    $authTest = \Illuminate\Support\Facades\Auth::attempt(['email' => $email, 'password' => $newPassword]);
+    \Illuminate\Support\Facades\Auth::logout(); // Logout after test
+    
+    return response("Password reset for {$email}.<br><br>" .
+        "Old hash: " . substr($oldHash, 0, 30) . "...<br>" .
+        "New password: {$newPassword}<br>" .
+        "New hash: " . substr($newHash, 0, 30) . "...<br>" .
+        "Hash check: " . ($isHashed ? 'PASSED' : 'FAILED') . "<br>" .
+        "Auth::attempt test: " . ($authTest ? 'PASSED' : 'FAILED') . "<br><br>" .
+        "You can now log in with:<br>Email: {$email}<br>Password: {$newPassword}", 200)
+        ->header('Content-Type', 'text/html');
+})->name('reset.password');
+
+// --- TEMPORARY: Generate test user credentials ---
+Route::get('/generate-user', function () {
+    $email = 'testuser@example.com';
+    $password = 'Test123456';
+    
+    // Get existing columns from users table
+    $existingColumns = [];
+    try {
+        $columns = DB::select("SHOW COLUMNS FROM users");
+        foreach ($columns as $column) {
+            $existingColumns[] = $column->Field;
+        }
+    } catch (\Exception $e) {
+        return response("Error checking database columns: " . $e->getMessage(), 500)
+            ->header('Content-Type', 'text/html');
+    }
+    
+    // Check if user already exists
+    $existingUser = \App\Models\User::where('email', $email)->first();
+    
+    if ($existingUser) {
+        // Update password if user exists
+        $existingUser->password = $password;
+        if (in_array('role', $existingColumns)) {
+            // Force update role to 'user' directly in database
+            DB::table('users')->where('email', $email)->update(['role' => 'user']);
+            $existingUser->refresh();
+        }
+        $existingUser->save();
+        $user = $existingUser;
+    } else {
+        // Prepare user data with only existing columns
+        $userData = [
+            'email' => $email,
+            'password' => $password, // Will be auto-hashed by Laravel's 'hashed' cast
+        ];
+        
+        // Add fields only if columns exist
+        if (in_array('full_name', $existingColumns)) {
+            $userData['full_name'] = 'Test User';
+        }
+        if (in_array('role', $existingColumns)) {
+            $userData['role'] = 'user';
+        }
+        if (in_array('mobile_number', $existingColumns)) {
+            $userData['mobile_number'] = '1234567890';
+        }
+        
+        // Create new user
+        $user = \App\Models\User::create($userData);
+    }
+    
+    // Verify password was hashed
+    $user->refresh();
+    $hashCheck = \Illuminate\Support\Facades\Hash::check($password, $user->getAttributes()['password']);
+    
+    // Test Auth::attempt
+    \Illuminate\Support\Facades\Auth::logout();
+    $authTest = \Illuminate\Support\Facades\Auth::attempt(['email' => $email, 'password' => $password]);
+    \Illuminate\Support\Facades\Auth::logout();
+    
+    // Verify role in database
+    $dbRole = DB::table('users')->where('email', $email)->value('role');
+    $modelRole = $user->role;
+    
+    return response("Test user created/updated successfully!<br><br>" .
+        "<strong>Credentials:</strong><br>" .
+        "Email: {$email}<br>" .
+        "Password: {$password}<br><br>" .
+        "<strong>Role Verification:</strong><br>" .
+        "Database role: " . ($dbRole ?? 'NULL') . "<br>" .
+        "Model role: " . ($modelRole ?? 'NULL') . "<br><br>" .
+        "<strong>Verification:</strong><br>" .
+        "Password hash check: " . ($hashCheck ? 'PASSED' : 'FAILED') . "<br>" .
+        "Auth::attempt test: " . ($authTest ? 'PASSED' : 'FAILED') . "<br><br>" .
+        "You can now log in with these credentials.", 200)
+        ->header('Content-Type', 'text/html');
+})->name('generate.user');
+
+// --- Dynamic Routes ---
 Route::get('/get-educations/{id}', [PageController::class, 'getEducations'])->name('get-educations');
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-    Route::resource('users', AdminUserController::class)->except(['show', 'create', 'store']);
-    Route::resource('memberships', MembershipController::class);
 
 

@@ -18,18 +18,29 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Allow access only if user is logged in and role is 'admin'
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            return $next($request);
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+            return redirect()->route('login')->with('error', 'Please log in to access this page.');
         }
 
-        // If AJAX or API request → return 403 JSON
-        if ($request->expectsJson()) {
-            return response()->json(['message' => 'Forbidden'], 403);
+        // Get fresh user data from database
+        $user = Auth::user();
+        $user->refresh();
+
+        // Check if user has admin role
+        if ($user->role !== 'admin') {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
+            
+            return redirect()->route('dashboard')
+                ->with('error', 'You do not have permission to access the admin panel.');
         }
 
-        // Otherwise → redirect normal users back to their dashboard
-        return redirect()->route('dashboard')
-            ->with('error', 'You do not have permission to access the admin panel.');
+        // User is admin - allow access
+        return $next($request);
     }
 }

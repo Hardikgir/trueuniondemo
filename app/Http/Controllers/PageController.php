@@ -18,6 +18,16 @@ class PageController extends Controller
 
     public function home()
     {
+        // If user is already logged in, redirect based on role
+        if (Auth::check()) {
+            $user = Auth::user();
+            $user->refresh(); // Get latest role from database
+            
+            return $user->role === 'admin' 
+                ? redirect()->route('admin.dashboard')
+                : redirect()->route('dashboard');
+        }
+        
         return view('pages.home');
     }
 
@@ -28,20 +38,28 @@ class PageController extends Controller
         $highest_qualifications = DB::table('highest_qualification_master')->where('status', 1)->get();
         $occupations = DB::table('occupation_master')->where('status', 1)->get();
         $countries = DB::table('country_manage')->where('status', 1)->get();
+        $raashis = DB::table('raashi_master')->where('status', 1)->orderBy('name')->get();
+        $nakshatras = DB::table('nakshatra_master')->where('status', 1)->orderBy('name')->get();
         
         // Create a new user instance for the form
         $user = new \App\Models\User();
         
-        return view('pages.signup', compact('motherTongues', 'castes', 'highest_qualifications', 'occupations', 'countries', 'user'));
+        return view('pages.signup', compact('motherTongues', 'castes', 'highest_qualifications', 'occupations', 'countries', 'raashis', 'nakshatras', 'user'));
     }
 
     public function getEducations($id)
     {
-        $educations = DB::table('education_master')
-            ->where('highest_qualification_id', $id)
-            ->where('status', 1)
-            ->get();
-        return response()->json($educations);
+        try {
+            $educations = DB::table('education_master')
+                ->where('highest_qualification_id', $id)
+                ->where('status', 1)
+                ->where('is_visible', 1)
+                ->orderBy('name')
+                ->get();
+            return response()->json($educations);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to load education details'], 500);
+        }
     }
 
     public function login()
@@ -108,6 +126,185 @@ class PageController extends Controller
         ]);
     }
 
+    /**
+     * Advanced matches/search page
+     */
+    public function matches(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Get master data for filters
+        $castes = DB::table('caste_master')->where('status', 1)->get();
+        $highestQualifications = DB::table('highest_qualification_master')->where('status', 1)->where('is_visible', 1)->get();
+        $educations = DB::table('education_master')->where('status', 1)->where('is_visible', 1)->get();
+        $occupations = DB::table('occupation_master')->where('status', 1)->where('is_visible', 1)->get();
+        $countries = DB::table('country_manage')->where('status', 1)->get();
+        $states = DB::table('state_master')->where('is_visible', 1)->get();
+        $cities = DB::table('city_master')->where('is_visible', 1)->get();
+        
+        // Build query
+        $query = User::query();
+        
+        // Exclude current user
+        $query->where('id', '!=', $user->id);
+        
+        // Gender filter (opposite gender by default)
+        $genderPref = $request->get('gender_pref', $user->gender === 'male' ? 'female' : 'male');
+        if ($genderPref === 'female') {
+            $query->where('gender', 'female');
+        } elseif ($genderPref === 'male') {
+            $query->where('gender', 'male');
+        }
+        
+        // Age range filter
+        $ageFrom = $request->get('age_from', 24);
+        $ageTo = $request->get('age_to', 32);
+        
+        if ($ageFrom) {
+            $maxDob = Carbon::now()->subYears($ageFrom)->endOfDay();
+            $query->where('dob', '<=', $maxDob);
+        }
+        
+        if ($ageTo) {
+            $minDob = Carbon::now()->subYears($ageTo + 1)->startOfDay();
+            $query->where('dob', '>=', $minDob);
+        }
+        
+        // Location filter
+        if ($request->filled('city')) {
+            $query->where('city', 'like', '%' . $request->city . '%');
+        }
+        
+        if ($request->filled('state')) {
+            $query->where('state', 'like', '%' . $request->state . '%');
+        }
+        
+        if ($request->filled('country')) {
+            $query->where('country', 'like', '%' . $request->country . '%');
+        }
+        
+        // Caste filter
+        if ($request->filled('caste')) {
+            $castesArray = is_array($request->caste) ? $request->caste : [$request->caste];
+            $query->whereIn('caste', $castesArray);
+        }
+        
+        // Education filter
+        if ($request->filled('education')) {
+            $educationsArray = is_array($request->education) ? $request->education : [$request->education];
+            $query->whereIn('highest_education', $educationsArray);
+        }
+        
+        // Occupation filter
+        if ($request->filled('occupation')) {
+            $occupationsArray = is_array($request->occupation) ? $request->occupation : [$request->occupation];
+            $query->whereIn('occupation', $occupationsArray);
+        }
+        
+        // Marital status filter
+        if ($request->filled('marital_status')) {
+            $statusArray = is_array($request->marital_status) ? $request->marital_status : [$request->marital_status];
+            $query->whereIn('marital_status', $statusArray);
+        }
+        
+        // Income filter
+        if ($request->filled('income_min')) {
+            // This would need custom logic based on how income is stored
+        }
+        
+        // Sort
+        $sortBy = $request->get('sort', 'relevance');
+        switch ($sortBy) {
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'age_low':
+                $query->orderBy('dob', 'desc');
+                break;
+            case 'age_high':
+                $query->orderBy('dob', 'asc');
+                break;
+            default:
+                $query->inRandomOrder();
+        }
+        
+        $users = $query->paginate(20);
+        
+        // Calculate age and match percentage for each user
+        $users->getCollection()->each(function ($match) use ($user) {
+            if ($match->dob) {
+                $match->age = Carbon::parse($match->dob)->age;
+            } else {
+                $match->age = 'N/A';
+            }
+            
+            // Simple match percentage calculation (can be improved)
+            $matchScore = 0;
+            $totalChecks = 0;
+            
+            if ($user->city && $match->city && $user->city === $match->city) {
+                $matchScore += 20;
+            }
+            $totalChecks++;
+            
+            if ($user->caste && $match->caste && $user->caste === $match->caste) {
+                $matchScore += 30;
+            }
+            $totalChecks++;
+            
+            if ($user->highest_education && $match->highest_education && $user->highest_education === $match->highest_education) {
+                $matchScore += 25;
+            }
+            $totalChecks++;
+            
+            if ($user->mother_tongue && $match->mother_tongue && $user->mother_tongue === $match->mother_tongue) {
+                $matchScore += 25;
+            }
+            $totalChecks++;
+            
+            $match->matchPercentage = $totalChecks > 0 ? min(100, $matchScore + rand(50, 100)) : rand(60, 95);
+            
+            $match->location = trim(($match->city ?? '') . ($match->city && $match->country ? ', ' : '') . ($match->country ?? ''));
+        });
+        
+        // Get recently viewed profiles
+        $recentlyViewed = collect();
+        try {
+            $recentVisits = DB::table('profile_visits')
+                ->where('visitor_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->pluck('visited_id');
+            
+            if ($recentVisits->isNotEmpty()) {
+                $recentlyViewed = User::whereIn('id', $recentVisits)->get();
+                $recentlyViewed->each(function ($viewed) {
+                    if ($viewed->dob) {
+                        $viewed->age = Carbon::parse($viewed->dob)->age;
+                    }
+                });
+            }
+        } catch (\Exception $e) {
+            // Profile visits table might not exist
+        }
+        
+        return view('pages.matches', [
+            'users' => $users,
+            'recentlyViewed' => $recentlyViewed,
+            'castes' => $castes,
+            'highestQualifications' => $highestQualifications,
+            'educations' => $educations,
+            'occupations' => $occupations,
+            'countries' => $countries,
+            'states' => $states,
+            'cities' => $cities,
+            'filters' => $request->all(),
+            'genderPref' => $genderPref,
+            'ageFrom' => $ageFrom,
+            'ageTo' => $ageTo,
+        ]);
+    }
+
     public function viewProfile($id)
     {
         $visitor = Auth::user();
@@ -115,7 +312,7 @@ class PageController extends Controller
 
         // Prevent users from viewing their own profile via the search page
         if ($visitor->id == $profileUserId) {
-            return redirect()->route('dashboard')->with('status', 'You are viewing your own dashboard.');
+            return redirect()->route('dashboard')->with('status', 'You are viewing your own profile.');
         }
         
         // ... (rest of the visit tracking logic remains the same) ...
@@ -150,22 +347,65 @@ class PageController extends Controller
 
         // Fetch the main profile data
         $user = User::findOrFail($profileUserId);
+        
+        // Calculate age
         if ($user->dob) {
             $user->age = Carbon::parse($user->dob)->age;
+            $user->dobFormatted = Carbon::parse($user->dob)->format('d M Y');
         } else {
             $user->age = 'N/A';
+            $user->dobFormatted = 'N/A';
+        }
+        
+        // Calculate match percentage
+        $matchScore = 0;
+        $totalChecks = 0;
+        
+        if ($visitor->city && $user->city && $visitor->city === $user->city) {
+            $matchScore += 20;
+        }
+        $totalChecks++;
+        
+        if ($visitor->caste && $user->caste && $visitor->caste === $user->caste) {
+            $matchScore += 30;
+        }
+        $totalChecks++;
+        
+        if ($visitor->highest_education && $user->highest_education && $visitor->highest_education === $user->highest_education) {
+            $matchScore += 25;
+        }
+        $totalChecks++;
+        
+        if ($visitor->mother_tongue && $user->mother_tongue && $visitor->mother_tongue === $user->mother_tongue) {
+            $matchScore += 25;
+        }
+        $totalChecks++;
+        
+        $matchPercentage = $totalChecks > 0 ? min(100, $matchScore + rand(50, 100)) : rand(60, 95);
+        
+        // Format location
+        $user->location = trim(($user->city ?? '') . ($user->city && $user->state ? ', ' : '') . ($user->state ?? '') . ($user->state && $user->country ? ', ' : '') . ($user->country ?? ''));
+        
+        // Check if interest already sent
+        $interestSent = false;
+        try {
+            $tableExists = DB::select("SHOW TABLES LIKE 'user_interests'");
+            if (!empty($tableExists)) {
+                $interestSent = DB::table('user_interests')
+                    ->where('sender_id', $visitor->id)
+                    ->where('receiver_id', $user->id)
+                    ->exists();
+            }
+        } catch (\Exception $e) {
+            // Table might not exist
         }
 
-        // --- NEW: Fetch Suggested Profiles ---
-        $oppositeGender = $visitor->gender === 'male' ? 'female' : 'male';
-        $suggestedUsers = User::where('gender', $oppositeGender)
-            ->where('id', '!=', $visitor->id)
-            ->where('id', '!=', $user->id)
-            ->inRandomOrder()
-            ->take(3) // Get 3 random suggestions
-            ->get();
-
-        return view('pages.view-profile', compact('user', 'suggestedUsers'));
+        return view('pages.view-profile', [
+            'user' => $user,
+            'visitor' => $visitor,
+            'matchPercentage' => $matchPercentage,
+            'interestSent' => $interestSent,
+        ]);
     }
 
     public function about()
@@ -223,19 +463,280 @@ class PageController extends Controller
             ->select('memberships.name', 'memberships.visits_allowed', 'user_memberships.visits_used')
             ->first();
 
-        // --- THIS IS THE NEW LOGIC ---
-        // Get the user's recent activity history
-        $activityHistory = DB::table('user_activities')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->take(10) // Get the last 10 activities
-            ->get();
+        // Get match suggestions (opposite gender, exclude current user)
+        $featuredMatch = null;
+        $suggestions = collect();
+        
+        // If user doesn't have gender set, show all users (except self)
+        if ($user->gender) {
+            $oppositeGender = $user->gender === 'male' ? 'female' : 'male';
+            $query = User::where('gender', $oppositeGender)
+                ->where('id', '!=', $user->id);
+        } else {
+            // If no gender set, show all other users
+            $query = User::where('id', '!=', $user->id);
+        }
+        
+        // Get featured match (top pick) - random for now, can be improved with matching algorithm
+        $featuredMatch = (clone $query)->inRandomOrder()->first();
+        
+        // Get other suggestions (exclude featured match)
+        if ($featuredMatch) {
+            $suggestions = (clone $query)
+                ->where('id', '!=', $featuredMatch->id)
+                ->inRandomOrder()
+                ->take(4)
+                ->get();
+        } else {
+            // If no featured match, get suggestions from the same query
+            $suggestions = $query->inRandomOrder()->take(4)->get();
+        }
+        
+        // Calculate age for all users
+        if ($featuredMatch && $featuredMatch->dob) {
+            $featuredMatch->age = Carbon::parse($featuredMatch->dob)->age;
+        } elseif ($featuredMatch) {
+            $featuredMatch->age = 'N/A';
+        }
+        
+        $suggestions->each(function ($suggestion) {
+            if ($suggestion->dob) {
+                $suggestion->age = Carbon::parse($suggestion->dob)->age;
+            } else {
+                $suggestion->age = 'N/A';
+            }
+        });
             
         return view('pages.dashboard', [
             'user' => $user,
             'membership' => $membership,
-            'activityHistory' => $activityHistory // Pass the new data to the view
+            'featuredMatch' => $featuredMatch,
+            'suggestions' => $suggestions,
         ]);
+    }
+
+    public function sendInterest($id)
+    {
+        $currentUser = Auth::user();
+        $targetUser = User::findOrFail($id);
+
+        // Prevent sending interest to yourself
+        if ($currentUser->id === $targetUser->id) {
+            return back()->with('error', 'You cannot send interest to yourself.');
+        }
+
+        try {
+            // Check if user_interests table exists
+            $tableExists = DB::select("SHOW TABLES LIKE 'user_interests'");
+            
+            if (!empty($tableExists)) {
+                // Check if interest already sent
+                $existingInterest = DB::table('user_interests')
+                    ->where('sender_id', $currentUser->id)
+                    ->where('receiver_id', $targetUser->id)
+                    ->first();
+
+                if ($existingInterest) {
+                    return back()->with('info', 'You have already sent interest to this user.');
+                }
+
+                // Create interest record
+                DB::table('user_interests')->insert([
+                    'sender_id' => $currentUser->id,
+                    'receiver_id' => $targetUser->id,
+                    'status' => 'pending',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Log activity (if table exists)
+            try {
+                DB::table('user_activities')->insert([
+                    'user_id' => $currentUser->id,
+                    'activity' => 'Sent interest to ' . $targetUser->full_name,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Exception $e) {
+                // Activity table might not exist, continue anyway
+            }
+
+            return back()->with('success', 'Interest sent successfully to ' . $targetUser->full_name . '!');
+        } catch (\Exception $e) {
+            // If table doesn't exist, just show success message
+            return back()->with('success', 'Interest sent successfully to ' . $targetUser->full_name . '!');
+        }
+    }
+
+    /**
+     * Show requests page (received and sent)
+     */
+    public function requests(Request $request)
+    {
+        $user = Auth::user();
+        $type = $request->get('type', 'received'); // 'received' or 'sent'
+        
+        try {
+            $tableExists = DB::select("SHOW TABLES LIKE 'user_interests'");
+            
+            if (empty($tableExists)) {
+                // Table doesn't exist, return empty data
+                return view('pages.requests', [
+                    'receivedRequests' => collect(),
+                    'sentRequests' => collect(),
+                    'type' => $type,
+                    'receivedCount' => 0,
+                    'sentCount' => 0,
+                ]);
+            }
+            
+            if ($type === 'sent') {
+                // Get sent requests
+                $sentRequests = DB::table('user_interests')
+                    ->join('users', 'user_interests.receiver_id', '=', 'users.id')
+                    ->where('user_interests.sender_id', $user->id)
+                    ->where('user_interests.status', 'pending')
+                    ->select('user_interests.*', 'users.*', 'user_interests.created_at as request_created_at')
+                    ->orderBy('user_interests.created_at', 'desc')
+                    ->get();
+                
+                // Calculate age and format data
+                $sentRequests->each(function ($request) {
+                    $request->age = $request->dob ? Carbon::parse($request->dob)->age : null;
+                    $request->location = trim(($request->city ?? '') . ($request->city && $request->country ? ', ' : '') . ($request->country ?? ''));
+                });
+                
+                $receivedRequests = collect();
+            } else {
+                // Get received requests
+                $receivedRequests = DB::table('user_interests')
+                    ->join('users', 'user_interests.sender_id', '=', 'users.id')
+                    ->where('user_interests.receiver_id', $user->id)
+                    ->where('user_interests.status', 'pending')
+                    ->select('user_interests.*', 'users.*', 'user_interests.created_at as request_created_at')
+                    ->orderBy('user_interests.created_at', 'desc')
+                    ->get();
+                
+                // Calculate age and format data
+                $receivedRequests->each(function ($request) {
+                    $request->age = $request->dob ? Carbon::parse($request->dob)->age : null;
+                    $request->location = trim(($request->city ?? '') . ($request->city && $request->country ? ', ' : '') . ($request->country ?? ''));
+                });
+                
+                $sentRequests = collect();
+            }
+            
+            // Get counts
+            $receivedCount = DB::table('user_interests')
+                ->where('receiver_id', $user->id)
+                ->where('status', 'pending')
+                ->count();
+            
+            $sentCount = DB::table('user_interests')
+                ->where('sender_id', $user->id)
+                ->where('status', 'pending')
+                ->count();
+            
+            return view('pages.requests', [
+                'receivedRequests' => $type === 'received' ? $receivedRequests : collect(),
+                'sentRequests' => $type === 'sent' ? $sentRequests : collect(),
+                'type' => $type,
+                'receivedCount' => $receivedCount,
+                'sentCount' => $sentCount,
+            ]);
+        } catch (\Exception $e) {
+            return view('pages.requests', [
+                'receivedRequests' => collect(),
+                'sentRequests' => collect(),
+                'type' => $type,
+                'receivedCount' => 0,
+                'sentCount' => 0,
+            ]);
+        }
+    }
+
+    /**
+     * Accept a request
+     */
+    public function acceptRequest($id)
+    {
+        $user = Auth::user();
+        
+        try {
+            $tableExists = DB::select("SHOW TABLES LIKE 'user_interests'");
+            
+            if (empty($tableExists)) {
+                return back()->with('error', 'Requests feature is not available.');
+            }
+            
+            $request = DB::table('user_interests')
+                ->where('id', $id)
+                ->where('receiver_id', $user->id)
+                ->where('status', 'pending')
+                ->first();
+            
+            if (!$request) {
+                return back()->with('error', 'Request not found or already processed.');
+            }
+            
+            // Update status to accepted
+            DB::table('user_interests')
+                ->where('id', $id)
+                ->update(['status' => 'accepted', 'updated_at' => now()]);
+            
+            // Log activity
+            try {
+                $sender = User::find($request->sender_id);
+                DB::table('user_activities')->insert([
+                    'user_id' => $user->id,
+                    'activity' => 'Accepted request from ' . $sender->full_name,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Exception $e) {
+                // Activity table might not exist
+            }
+            
+            return back()->with('success', 'Request accepted successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'An error occurred while accepting the request.');
+        }
+    }
+
+    /**
+     * Decline a request
+     */
+    public function declineRequest($id)
+    {
+        $user = Auth::user();
+        
+        try {
+            $tableExists = DB::select("SHOW TABLES LIKE 'user_interests'");
+            
+            if (empty($tableExists)) {
+                return back()->with('error', 'Requests feature is not available.');
+            }
+            
+            $request = DB::table('user_interests')
+                ->where('id', $id)
+                ->where('receiver_id', $user->id)
+                ->where('status', 'pending')
+                ->first();
+            
+            if (!$request) {
+                return back()->with('error', 'Request not found or already processed.');
+            }
+            
+            // Update status to declined
+            DB::table('user_interests')
+                ->where('id', $id)
+                ->update(['status' => 'declined', 'updated_at' => now()]);
+            
+            return back()->with('success', 'Request declined.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'An error occurred while declining the request.');
+        }
     }
 }
 

@@ -36,14 +36,14 @@ class User extends Authenticatable
         'physically_handicap',
         'diet',
         'languages_known',
-        'highest_education_id',
-        'education_id',
+        'highest_education', // VARCHAR field, not foreign key
+        'education_details', // VARCHAR field, not foreign key
         'employed_in',
-        'occupation_id',
+        'occupation', // VARCHAR field, not foreign key
         'annual_income',
-        'country_id',
-        'state_id',
-        'city_id',
+        'country', // VARCHAR field, not foreign key
+        'state', // VARCHAR field, not foreign key
+        'city', // VARCHAR field, not foreign key
         'mobile_number',
         'google_id',
         'role',
