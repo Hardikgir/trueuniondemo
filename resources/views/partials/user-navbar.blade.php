@@ -10,6 +10,7 @@
         <nav class="hidden lg:flex items-center gap-9">
             <a class="text-sm font-medium leading-normal transition-colors {{ request()->routeIs('dashboard') ? 'text-white font-bold' : 'text-text-muted hover:text-white' }}" href="{{ route('dashboard') }}">Dashboard</a>
             <a class="text-sm font-medium leading-normal transition-colors {{ request()->routeIs('matches') ? 'text-white font-bold' : 'text-text-muted hover:text-white' }}" href="{{ route('matches') }}">Matches</a>
+            <a class="text-sm font-medium leading-normal transition-colors {{ request()->routeIs('shortlist') ? 'text-white font-bold' : 'text-text-muted hover:text-white' }}" href="{{ route('shortlist') }}">Shortlist</a>
             <a class="text-sm font-medium leading-normal transition-colors {{ request()->routeIs('requests') ? 'text-white font-bold' : 'text-text-muted hover:text-white' }}" href="{{ route('requests') }}">Inbox</a>
             <a class="text-sm font-medium leading-normal transition-colors {{ request()->routeIs('profile.edit') || request()->routeIs('profile.view') ? 'text-white font-bold' : 'text-text-muted hover:text-white' }}" href="{{ route('profile.edit') }}">Profile</a>
         </nav>

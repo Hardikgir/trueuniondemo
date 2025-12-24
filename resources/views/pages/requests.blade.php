@@ -62,59 +62,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-background-light dark:bg-background-dark text-black dark:text-white font-display overflow-hidden h-screen flex flex-col selection:bg-primary selection:text-white">
-    @include('partials.user-navbar')
     <div class="flex flex-1 overflow-hidden">
-    <!-- Sidebar Navigation -->
-    <nav class="hidden lg:flex flex-col w-80 h-full border-r border-[#392b28] bg-background-dark shrink-0">
-        <div class="flex flex-col h-full p-6">
-            <!-- User Profile / Branding -->
-            <div class="flex items-center gap-4 mb-10">
-                <div class="bg-center bg-no-repeat bg-cover rounded-full h-12 w-12 border-2 border-[#392b28]" 
-                     style='background-image: url("{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->full_name) . '&background=ec3713&color=fff' }}");'></div>
-                <div>
-                    <h1 class="text-white text-lg font-bold leading-tight">{{ Auth::user()->full_name }}</h1>
-                    <p class="text-text-secondary text-sm">Premium Member</p>
-                </div>
-            </div>
-            <!-- Navigation Links -->
-            <div class="flex flex-col gap-2 flex-1">
-                <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#392b28] text-text-secondary hover:text-white transition-colors group" href="{{ route('dashboard') }}">
-                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
-                    <p class="text-sm font-medium">Dashboard</p>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#392b28] text-text-secondary hover:text-white transition-colors group" href="{{ route('matches') }}">
-                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">favorite</span>
-                    <p class="text-sm font-medium">Matches</p>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-xl bg-[#392b28] text-white transition-colors" href="{{ route('requests') }}">
-                    <span class="material-symbols-outlined text-primary fill">mark_email_unread</span>
-                    <p class="text-sm font-medium">Requests</p>
-                    @if($receivedCount > 0)
-                    <span class="ml-auto bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $receivedCount }}</span>
-                    @endif
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#392b28] text-text-secondary hover:text-white transition-colors group" href="#">
-                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">chat_bubble</span>
-                    <p class="text-sm font-medium">Messages</p>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[#392b28] text-text-secondary hover:text-white transition-colors group" href="{{ route('profile.edit') }}">
-                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
-                    <p class="text-sm font-medium">Settings</p>
-                </a>
-            </div>
-            <!-- Footer Links -->
-            <div class="mt-auto pt-6 border-t border-[#392b28]">
-                <div class="flex flex-wrap gap-4 text-xs text-text-secondary">
-                    <a class="hover:text-white" href="#">Privacy</a>
-                    <a class="hover:text-white" href="#">Help</a>
-                    <a class="hover:text-white" href="#">Terms</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+        @include('partials.user-sidebar')
 
     <!-- Main Content Area -->
-    <main class="flex-1 h-full overflow-y-auto relative flex flex-col">
+    <main class="flex-1 h-full overflow-y-auto relative flex flex-col lg:ml-80">
         <div class="flex-1 w-full max-w-[1200px] mx-auto p-4 md:p-8 lg:p-12">
 
             <!-- Success/Error Messages -->

@@ -71,4 +71,50 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Retrieve the model for bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        // Try to decrypt the value first
+        try {
+            $decrypted = decrypt($value);
+            return $this->where($field ?? $this->getRouteKeyName(), $decrypted)->first();
+        } catch (\Exception $e) {
+            // If decryption fails, try as plain ID (for backward compatibility)
+            return $this->where($field ?? $this->getRouteKeyName(), $value)->first();
+        }
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveChildRouteBinding($childType, $value, $field)
+    {
+        try {
+            $decrypted = decrypt($value);
+            return parent::resolveChildRouteBinding($childType, $decrypted, $field);
+        } catch (\Exception $e) {
+            return parent::resolveChildRouteBinding($childType, $value, $field);
+        }
+    }
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKey()
+    {
+        return encrypt($this->getAttribute($this->getRouteKeyName()));
+    }
 }

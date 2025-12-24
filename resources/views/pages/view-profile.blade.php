@@ -48,14 +48,15 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-white overflow-x-hidden min-h-screen flex flex-col">
-    @include('partials.user-navbar')
-
-    <!-- Main Content -->
-    <main class="flex-grow w-full px-4 lg:px-10 py-8 mx-auto max-w-[1400px]">
+    <div class="flex flex-1 overflow-hidden">
+        @include('partials.user-sidebar')
+        
+        <!-- Main Content -->
+        <main class="flex-grow w-full px-4 lg:px-10 py-8 mx-auto max-w-[1400px] overflow-y-auto lg:ml-80">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
             <!-- Left Sidebar (Sticky Profile Card) -->
             <div class="lg:col-span-4 xl:col-span-3">
-                <div class="sticky top-24 space-y-6">
+                <div class="sticky top-0">
                     <!-- Profile Card -->
                     <div class="bg-card-dark rounded-[2rem] p-4 border border-card-border shadow-2xl relative overflow-hidden group">
                         <!-- Main Image -->
@@ -110,17 +111,22 @@
                             </div>
                             
                             <!-- Actions -->
-                            <div class="grid grid-cols-2 gap-3 mb-4">
-                                <button class="col-span-1 flex items-center justify-center gap-2 h-12 rounded-full bg-white text-background-dark font-bold text-sm hover:bg-gray-100 transition-colors">
-                                    <span class="material-symbols-outlined text-[20px]">star</span>
-                                    Shortlist
-                                </button>
+                            <div class="grid {{ $canChat ? 'grid-cols-2' : 'grid-cols-1' }} gap-3 mb-4">
+                                <form action="{{ route('profile.toggle-shortlist', $user) }}" method="POST" class="{{ $canChat ? 'col-span-1' : 'col-span-1' }}">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center justify-center gap-2 h-12 rounded-full {{ $isShortlisted ? 'bg-primary text-white' : 'bg-white text-background-dark' }} font-bold text-sm hover:bg-gray-100 hover:bg-primary-dark transition-colors">
+                                        <span class="material-symbols-outlined text-[20px] {{ $isShortlisted ? 'filled' : '' }}">star</span>
+                                        {{ $isShortlisted ? 'Shortlisted' : 'Shortlist' }}
+                                    </button>
+                                </form>
+                                @if($canChat)
                                 <button class="col-span-1 flex items-center justify-center gap-2 h-12 rounded-full bg-transparent border border-white/20 text-white font-bold text-sm hover:bg-white/5 transition-colors">
                                     <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
                                     Chat
                                 </button>
+                                @endif
                                 @if(!$interestSent)
-                                <form action="{{ route('profile.send-interest', $user->id) }}" method="POST" class="col-span-2">
+                                <form action="{{ route('profile.send-interest', $user) }}" method="POST" class="col-span-2">
                                     @csrf
                                     <button type="submit" class="w-full flex items-center justify-center gap-2 h-14 rounded-full bg-primary text-white font-bold text-base shadow-lg shadow-primary/25 hover:bg-red-600 transition-all hover:scale-[1.02]">
                                         <span class="material-symbols-outlined text-[22px]">favorite</span>
@@ -140,9 +146,9 @@
                                 <button class="text-text-secondary hover:text-white text-xs flex items-center gap-1 transition-colors">
                                     <span class="material-symbols-outlined text-[14px]">block</span> Block
                                 </button>
-                                <button class="text-text-secondary hover:text-white text-xs flex items-center gap-1 transition-colors">
+                                <a href="{{ route('report.create', $user->id) }}" class="text-text-secondary hover:text-white text-xs flex items-center gap-1 transition-colors">
                                     <span class="material-symbols-outlined text-[14px]">flag</span> Report
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -398,5 +404,6 @@
             </div>
         </div>
     </main>
+    </div>
 </body>
 </html>

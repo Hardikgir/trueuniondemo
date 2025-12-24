@@ -36,6 +36,8 @@ Route::get('language/{locale}', function ($locale) {
 // --- Public & Guest Routes ---
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
+Route::get('/success-stories', [PageController::class, 'successStories'])->name('success-stories');
+Route::get('/terms', [PageController::class, 'terms'])->name('terms');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/membership', [PageController::class, 'membership'])->name('membership');
 Route::get('/search', [PageController::class, 'search'])->name('search');
@@ -43,7 +45,7 @@ Route::get('/search', [PageController::class, 'search'])->name('search');
 Route::middleware('guest')->group(function () {
     Route::get('/signup', [PageController::class, 'signup'])->name('signup');
     Route::post('/signup', [RegisterController::class, 'store'])->name('signup.store');
-    Route::get('/login', [PageController::class, 'home'])->name('login'); // Login page uses home view
+    Route::get('/login', [PageController::class, 'login'])->name('login');
     Route::post('/login', [LoginController::class, 'authenticate'])->name('login.store');
     
     // OTP Routes
@@ -65,9 +67,24 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::get('/profile/{id}', [PageController::class, 'viewProfile'])->name('profile.view');
-    Route::post('/profile/{id}/send-interest', [PageController::class, 'sendInterest'])->name('profile.send-interest');
+    Route::get('/profile/{user}', [PageController::class, 'viewProfile'])->name('profile.view');
+    Route::post('/profile/{user}/send-interest', [PageController::class, 'sendInterest'])->name('profile.send-interest');
+    Route::post('/profile/{user}/toggle-shortlist', [PageController::class, 'toggleShortlist'])->name('profile.toggle-shortlist');
+    Route::get('/shortlist', [PageController::class, 'shortlist'])->name('shortlist');
+    Route::get('/messages', [\App\Http\Controllers\MessagesController::class, 'index'])->name('messages');
+    Route::get('/messages/chat/{user}', [\App\Http\Controllers\MessagesController::class, 'getChat'])->name('messages.chat');
+    Route::post('/messages/send/{user}', [\App\Http\Controllers\MessagesController::class, 'sendMessage'])->name('messages.send');
+    Route::get('/messages/new/{user}', [\App\Http\Controllers\MessagesController::class, 'getNewMessages'])->name('messages.new');
+    Route::get('/report/{user}', [\App\Http\Controllers\ReportController::class, 'create'])->name('report.create');
+    Route::post('/report/{user}', [\App\Http\Controllers\ReportController::class, 'store'])->name('report.store');
     Route::post('/subscribe/{membership}', [SubscriptionController::class, 'subscribe'])->name('subscribe');
+    
+    // Notifications routes
+    Route::get('/notifications', [\App\Http\Controllers\NotificationsController::class, 'index'])->name('notifications');
+    Route::get('/notifications/get', [\App\Http\Controllers\NotificationsController::class, 'getNotifications'])->name('notifications.get');
+    Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationsController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationsController::class, 'getUnreadCount'])->name('notifications.unread-count');
 });
 
 // --- ADMIN PANEL ROUTES ---
@@ -310,6 +327,88 @@ Route::get('/check-role/{email}', function ($email) {
         "Sessions cleared. Please log out and log back in.", 200)
         ->header('Content-Type', 'text/html');
 })->name('check.role');
+
+// --- TEMPORARY: Generate test user credentials for chat testing ---
+Route::get('/generate-chat-users', function () {
+    $user1 = \App\Models\User::firstOrCreate(
+        ['email' => 'alice@test.com'],
+        [
+            'full_name' => 'Alice Johnson',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => 'user',
+            'gender' => 'female',
+            'dob' => '1995-05-15',
+            'city' => 'Mumbai',
+            'state' => 'Maharashtra',
+            'country' => 'India',
+            'email_verified_at' => now(),
+        ]
+    );
+    
+    // User 2
+    $user2 = \App\Models\User::firstOrCreate(
+        ['email' => 'bob@test.com'],
+        [
+            'full_name' => 'Bob Smith',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => 'user',
+            'gender' => 'male',
+            'dob' => '1992-08-20',
+            'city' => 'Delhi',
+            'state' => 'Delhi',
+            'country' => 'India',
+            'email_verified_at' => now(),
+        ]
+    );
+    
+    // Create mutual interest so they can chat
+    try {
+        $hasInterest = \Illuminate\Support\Facades\DB::table('user_interests')
+            ->where(function($query) use ($user1, $user2) {
+                $query->where('sender_id', $user1->id)
+                      ->where('receiver_id', $user2->id)
+                      ->orWhere(function($q) use ($user1, $user2) {
+                          $q->where('sender_id', $user2->id)
+                            ->where('receiver_id', $user1->id);
+                      });
+            })
+            ->exists();
+            
+        if (!$hasInterest) {
+            \Illuminate\Support\Facades\DB::table('user_interests')->insert([
+                'sender_id' => $user1->id,
+                'receiver_id' => $user2->id,
+                'status' => 'accepted',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    } catch (\Exception $e) {
+        // Table might not exist
+    }
+    
+    $output = "<h2>Test User Credentials for Chat Testing</h2>";
+    $output .= "<div style='font-family: monospace; padding: 20px; background: #f5f5f5; margin: 20px 0;'>";
+    $output .= "<h3>User 1:</h3>";
+    $output .= "<p><strong>Email:</strong> alice@test.com</p>";
+    $output .= "<p><strong>Password:</strong> password123</p>";
+    $output .= "<p><strong>Name:</strong> Alice Johnson</p>";
+    $output .= "<p><strong>ID:</strong> {$user1->id}</p>";
+    $output .= "</div>";
+    
+    $output .= "<div style='font-family: monospace; padding: 20px; background: #f5f5f5; margin: 20px 0;'>";
+    $output .= "<h3>User 2:</h3>";
+    $output .= "<p><strong>Email:</strong> bob@test.com</p>";
+    $output .= "<p><strong>Password:</strong> password123</p>";
+    $output .= "<p><strong>Name:</strong> Bob Smith</p>";
+    $output .= "<p><strong>ID:</strong> {$user2->id}</p>";
+    $output .= "</div>";
+    
+    $output .= "<p style='color: green;'><strong>✓ Mutual interest created - Users can now chat!</strong></p>";
+    $output .= "<p><strong>Note:</strong> Both users have accepted interest status, so they can send messages to each other.</p>";
+    
+    return response($output)->header('Content-Type', 'text/html');
+})->name('generate.chat.users');
 
 // --- TEMPORARY: Reset user password ---
 Route::get('/reset-password/{email}', function ($email) {

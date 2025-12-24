@@ -25,6 +25,7 @@
                         "surface-dark": "#271d1c",
                         "surface-border": "#392b28",
                         "text-muted": "#b9a19d",
+                        "text-secondary": "#b9a19d",
                     },
                     fontFamily: {
                         "display": ["Newsreader", "serif"],
@@ -48,14 +49,29 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #221310;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #392b28;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ec3713;
+        }
     </style>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col overflow-x-hidden text-white selection:bg-primary selection:text-white">
-    @include('partials.user-navbar')
-
-    <!-- Main Layout -->
-    <main class="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
+    <div class="flex flex-1 overflow-hidden">
+        @include('partials.user-sidebar')
+        
+        <!-- Main Layout -->
+        <main class="flex-1 h-full overflow-y-auto relative flex flex-col lg:ml-80">
+            <div class="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
         <!-- Success Message -->
         @if(session('success'))
             <div class="mb-6 bg-green-500/20 border border-green-500 text-green-300 px-4 py-3 rounded-lg">
@@ -152,14 +168,14 @@
                             @endif
                         </div>
                         <div class="flex items-center gap-4 mt-8 w-full md:w-auto">
-                            <form method="POST" action="{{ route('profile.send-interest', $featuredMatch->id) }}" class="inline">
+                            <form method="POST" action="{{ route('profile.send-interest', $featuredMatch) }}" class="inline">
                                 @csrf
                                 <button type="submit" class="flex-1 md:flex-none h-12 px-8 bg-primary hover:bg-primary-dark text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all transform hover:scale-105 shadow-lg shadow-primary/20">
                                     <span class="material-symbols-outlined">favorite</span>
                                     Send Interest
                                 </button>
                             </form>
-                            <a href="{{ route('profile.view', $featuredMatch->id) }}" class="size-12 rounded-lg border border-surface-border text-text-muted hover:text-white hover:bg-surface-border flex items-center justify-center transition-colors">
+                            <a href="{{ route('profile.view', $featuredMatch) }}" class="size-12 rounded-lg border border-surface-border text-text-muted hover:text-white hover:bg-surface-border flex items-center justify-center transition-colors">
                                 <span class="material-symbols-outlined">visibility</span>
                             </a>
                         </div>
@@ -185,7 +201,7 @@
                         <div class="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-bold text-white border border-white/10">
                             {{ 95 - ($index * 2) }}% Match
                         </div>
-                        <a href="{{ route('profile.view', $suggestion->id) }}">
+                        <a href="{{ route('profile.view', $suggestion) }}">
                             <div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" 
                                  style='background-image: url("{{ $suggestion->profile_image ? asset('storage/' . $suggestion->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($suggestion->full_name) . '&size=400&background=ec3713&color=fff' }}");'>
                             </div>
@@ -193,7 +209,7 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent opacity-80"></div>
                         <!-- Floating Action Button -->
                         <div class="absolute bottom-4 right-4 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                            <form method="POST" action="{{ route('profile.send-interest', $suggestion->id) }}" class="inline">
+                            <form method="POST" action="{{ route('profile.send-interest', $suggestion) }}" class="inline">
                                 @csrf
                                 <button type="submit" class="size-10 rounded-full bg-primary text-white shadow-lg flex items-center justify-center hover:bg-primary-dark">
                                     <span class="material-symbols-outlined text-[20px]">favorite</span>
@@ -226,17 +242,6 @@
             <a href="{{ route('matches') }}" class="mt-4 inline-block text-primary hover:text-white transition-colors">Browse All Profiles</a>
         </div>
         @endif
-
-        <!-- Debug Info (remove in production) -->
-        @if(config('app.debug'))
-        <div class="mt-8 p-4 bg-surface-dark rounded-lg text-xs text-text-muted">
-            <p>Debug Info:</p>
-            <p>User Gender: {{ $user->gender ?? 'Not Set' }}</p>
-            <p>Featured Match: {{ $featuredMatch ? 'Yes' : 'No' }}</p>
-            <p>Suggestions Count: {{ $suggestions->count() }}</p>
-            <p>Total Users in DB: {{ \App\Models\User::count() }}</p>
-        </div>
-        @endif
     </main>
 
     <script>
@@ -251,5 +256,8 @@
             });
         });
     </script>
+            </div>
+        </main>
+    </div>
 </body>
 </html>

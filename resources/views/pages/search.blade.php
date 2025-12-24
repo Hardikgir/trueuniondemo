@@ -52,7 +52,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 @forelse ($users as $user)
                     <div class="pricing-card text-center transform hover:-translate-y-1 transition-transform duration-300">
-                        <a href="{{ auth()->check() ? route('profile.view', $user->id) : route('login') }}">
+                        <a href="{{ auth()->check() ? route('profile.view', $user) : route('login') }}">
                             <img src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://placehold.co/150x150/a2e4ff/702963?text=' . substr($user->full_name, 0, 1) }}" alt="Profile Picture" class="w-28 h-28 rounded-full mx-auto border-4 border-white shadow-md object-cover">
                         </a>
                         <h3 class="text-xl font-bold mt-4 text-gray-800">{{ $user->full_name }}</h3>
@@ -60,7 +60,7 @@
                         <p class="text-gray-500 text-sm mt-1">{{ $user->city }}, {{ $user->country }}</p>
                         
                         @auth
-                            <a href="{{ route('profile.view', $user->id) }}" class="select-btn mt-4 text-sm block">{{ __('View Profile') }}</a>
+                            <a href="{{ route('profile.view', $user) }}" class="select-btn mt-4 text-sm block">{{ __('View Profile') }}</a>
                         @else
                             <a href="{{ route('login') }}" class="select-btn mt-4 text-sm block">{{ __('Login to View') }}</a>
                         @endauth

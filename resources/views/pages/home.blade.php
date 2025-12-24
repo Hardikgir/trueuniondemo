@@ -3,15 +3,16 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Login - TrueUnion</title>
-    <!-- Fonts -->
+    <title>Matrimony - Find the Love You Deserve</title>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+    <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <!-- Theme Config -->
+    <!-- Theme Configuration -->
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -20,277 +21,410 @@
                     colors: {
                         "primary": "#ec3713",
                         "background-light": "#f8f6f6",
-                        "background-dark": "#221310",
-                        "surface-dark": "#2e1a17",
-                        "accent-gold": "#d4af37", 
+                        "background-dark": "#181211", 
+                        "surface-dark": "#271d1c",
+                        "border-dark": "#392b28",
                     },
                     fontFamily: {
-                        "display": ["Newsreader", "serif"]
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
                     },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    backgroundImage: {
-                        'texture': "url('https://www.transparenttextures.com/patterns/cubes.png')", 
-                    }
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "3rem", "full": "9999px"},
                 },
             },
         }
     </script>
     <style>
-        /* Custom scrollbar for better aesthetic */
+        /* Custom scrollbar to keep it clean */
         ::-webkit-scrollbar {
-            width: 8px
+            width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #221310
+            background: #181211; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #392b28;
-            border-radius: 4px
+            background: #392b28; 
+            border-radius: 4px;
         }
-        .text-shadow-sm {
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3)
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ec3713; 
         }
-        /* Subtle grain texture overlay */
-        .grain-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 50;
-            opacity: 0.05;
-            background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCPOjlxYoitkkyxSmB6qumNf2SgUrTeTq-WJ57gP4pqf6xtovP0vex9L57jmlR6NRNjsB-s-9Dsda4Vq1rQD68La9Jacc23jkZayaKmXinzTd1g4cE0Pdji-fRfROflf48rpRlJDvTpW3zf1LnSdKDw3gOy5HoKvleL2MsnHgQdp3esNgRgs2QLuQqwPhwlAg4WvGnEu6A61uP3TTG9Uo_6_Lm7qdvIoVzJI_HFZ6dx51JjHgHZEun6rKmG7PxwoZLSlh4GzQ4Zx-E)
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display antialiased overflow-x-hidden selection:bg-primary selection:text-white">
-    <!-- Texture Overlay -->
-    <div class="grain-overlay"></div>
-    <div class="relative flex min-h-screen w-full flex-col">
-        <!-- Navbar -->
-        <header class="fixed top-0 z-40 w-full border-b border-[#392b28] bg-background-dark/90 backdrop-blur-md px-6 py-4 lg:px-10">
-            <div class="mx-auto flex max-w-7xl items-center justify-between">
-                <!-- Logo -->
-                <a href="{{ route('home') }}" class="flex items-center gap-3 text-white transition-opacity hover:opacity-80 cursor-pointer">
-                    <div class="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary">
-                        <span class="material-symbols-outlined" style="font-size: 20px;">diversity_3</span>
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-tight">TrueUnion</h2>
-                </a>
-                <!-- Desktop Nav -->
-                <nav class="hidden md:flex items-center gap-10">
-                    <a class="text-white/80 text-lg font-medium hover:text-primary transition-colors italic" href="#stories">Stories</a>
-                    <a class="text-white/80 text-lg font-medium hover:text-primary transition-colors italic" href="{{ route('membership') }}">Membership</a>
-                    <a class="text-white/80 text-lg font-medium hover:text-primary transition-colors italic" href="#gifts">Gifts</a>
-                </nav>
-                <!-- Actions -->
-                <div class="flex items-center gap-4">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="hidden md:flex text-white font-medium hover:text-primary transition-colors">
-                            Dashboard
-                        </a>
-                        @if(Auth::user()->role === 'admin')
-                            <a href="{{ route('admin.dashboard') }}" class="hidden md:flex text-white font-medium hover:text-primary transition-colors">
-                                Admin Panel
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+    <div class="flex flex-col min-h-screen">
+        @include('partials.top-navbar')
+        
+        <!-- Main Content Wrapper -->
+        <main class="flex-grow">
+            <!-- Hero Section -->
+            <section class="relative min-h-[90vh] flex items-center justify-center px-4 py-12 md:px-10 overflow-hidden">
+                <!-- Background ambient glow -->
+                <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div class="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+                <div class="max-w-[1440px] w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center z-10">
+                    <!-- Left: Typography -->
+                    <div class="flex flex-col gap-6 md:gap-8">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 w-fit">
+                            <span class="size-2 rounded-full bg-primary animate-pulse"></span>
+                            <span class="text-xs font-bold text-primary uppercase tracking-wider">#1 Trusted Platform</span>
+                        </div>
+                        <h1 class="text-5xl md:text-7xl lg:text-[5.5rem] font-black leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/60">
+                            Find the <br/>
+                            <span class="text-primary">Love</span> You <br/>
+                            Deserve.
+                        </h1>
+                        <p class="text-lg md:text-xl text-gray-400 max-w-md font-medium">
+                            Curated connections for the modern soul. Join over 5 million verified families finding meaningful relationships.
+                        </p>
+                        <!-- Quick Search Capsule -->
+                        <div class="mt-4 p-2 bg-surface-dark border border-border-dark rounded-full flex flex-col sm:flex-row items-center gap-2 max-w-xl shadow-2xl shadow-black/50">
+                            <div class="flex-1 w-full sm:w-auto px-4 py-2 border-b sm:border-b-0 sm:border-r border-border-dark">
+                                <label class="text-[10px] uppercase text-gray-500 font-bold tracking-wider block">Looking for</label>
+                                <select class="bg-transparent border-none p-0 text-white font-semibold focus:ring-0 text-sm w-full cursor-pointer">
+                                    <option class="bg-surface-dark">Woman</option>
+                                    <option class="bg-surface-dark">Man</option>
+                                </select>
+                            </div>
+                            <div class="flex-1 w-full sm:w-auto px-4 py-2 border-b sm:border-b-0 sm:border-r border-border-dark">
+                                <label class="text-[10px] uppercase text-gray-500 font-bold tracking-wider block">Age</label>
+                                <select class="bg-transparent border-none p-0 text-white font-semibold focus:ring-0 text-sm w-full cursor-pointer">
+                                    <option class="bg-surface-dark">20 - 25</option>
+                                    <option class="bg-surface-dark">26 - 30</option>
+                                    <option class="bg-surface-dark">31 - 35</option>
+                                    <option class="bg-surface-dark">36 - 40</option>
+                                </select>
+                            </div>
+                            <div class="flex-1 w-full sm:w-auto px-4 py-2">
+                                <label class="text-[10px] uppercase text-gray-500 font-bold tracking-wider block">Religion</label>
+                                <select class="bg-transparent border-none p-0 text-white font-semibold focus:ring-0 text-sm w-full cursor-pointer">
+                                    <option class="bg-surface-dark">Any</option>
+                                    <option class="bg-surface-dark">Hindu</option>
+                                    <option class="bg-surface-dark">Muslim</option>
+                                    <option class="bg-surface-dark">Christian</option>
+                                    <option class="bg-surface-dark">Sikh</option>
+                                </select>
+                            </div>
+                            <a href="{{ route('matches') }}" class="w-full sm:w-auto size-12 bg-primary rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors shrink-0">
+                                <span class="material-symbols-outlined">search</span>
                             </a>
-                        @endif
-                        <form action="{{ route('logout') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="hidden md:flex text-white font-medium hover:text-primary transition-colors">
-                                Logout
-                            </button>
-                        </form>
-                    @else
-                        <a href="{{ route('login') }}" class="hidden md:flex text-white font-medium hover:text-primary transition-colors">
-                            Log In
-                        </a>
-                        <a href="{{ route('signup') }}" class="flex items-center justify-center rounded-lg bg-primary px-5 py-2 text-white text-base font-bold shadow-lg shadow-primary/20 hover:bg-red-600 hover:scale-105 transition-all duration-300">
-                            Join Now
-                        </a>
-                    @endauth
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content (Split Layout) -->
-        <main class="flex flex-1 flex-col lg:flex-row pt-[72px]">
-            <!-- Left Panel: Editorial Visual -->
-            <div class="relative w-full lg:w-1/2 min-h-[400px] lg:min-h-screen flex items-end justify-start p-8 lg:p-16 overflow-hidden group">
-                <!-- Background Image -->
-                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-[2s] group-hover:scale-105" data-alt="Abstract artistic representation of connection, featuring two interlocking gold rings on textured dark red silk" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDmNny5whchnLyCKzVM_lCRgHGzXcilMdLKjOxpQ_A0r1Evk7BCWLgCsbyqFvTVKaP6csCK1tbudFWOYYpIqJNWR4-xS133zC2Dwc_k4V652FkAx-MKAu0tWcNuoFx-qz7suTHLd7czH71IDtohZgExgeQe6aHHdVcFmgm-7JDuJn4x66EOwn5ATrDYR2_Ztgn-0CAvzy8zX8I_eBi08X1aaIF7Rl72ylfgRBs_pLsO-Q8d-Sg5YC20onu_tYnsKOvdKYw651rGRqs");'>
-                </div>
-                <!-- Gradient Overlay -->
-                <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/50 to-transparent lg:bg-gradient-to-r lg:via-background-dark/30 lg:to-transparent"></div>
-                <!-- Text Content Over Image -->
-                <div class="relative z-10 max-w-lg mb-8 lg:mb-20">
-                    <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm mb-6">
-                        <span class="size-2 rounded-full bg-primary animate-pulse"></span>
-                        <span class="tracking-wide uppercase">Matches Curated Daily</span>
+                        </div>
                     </div>
-                    <h1 class="text-5xl lg:text-7xl font-black text-white leading-[0.9] tracking-tighter drop-shadow-lg mb-6">
-                        The Art of <br/>
-                        <span class="italic text-primary font-normal">Connection.</span>
-                    </h1>
-                    <p class="text-lg lg:text-xl text-white/90 font-light leading-relaxed max-w-md drop-shadow-md">
-                        Curated matches for a lifetime of stories. Experience a union designed with intention, transcending the ordinary.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Right Panel: Registration Form -->
-            <div class="relative w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-16 bg-background-dark z-20">
-                <!-- Decorative Elements -->
-                <div class="absolute top-0 right-0 p-10 opacity-20 pointer-events-none">
-                    <span class="material-symbols-outlined text-9xl text-primary rotate-12">favorite</span>
-                </div>
-                <div class="w-full max-w-md flex flex-col gap-8 relative">
-                    <!-- Form Header -->
-                    <div class="text-center lg:text-left space-y-2">
-                        <h2 class="text-3xl text-white font-bold tracking-tight">Welcome back</h2>
-                        <p class="text-white/60 text-base">Sign in to continue your journey.</p>
-                    </div>
-
-                    <!-- Auth Card -->
-                    <div class="bg-surface-dark border border-[#392b28] rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm">
-                        <!-- Tabs -->
-                        <div class="grid grid-cols-2 border-b border-[#392b28]">
-                            <a href="{{ route('signup') }}" class="py-4 text-center text-white/50 font-medium text-base hover:text-white hover:bg-white/5 transition-colors">
-                                Register
-                            </a>
-                            <div class="relative py-4 text-center text-primary font-bold text-base bg-white/5">
-                                Login
-                                <div class="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>
+                    <!-- Right: Visual Collage -->
+                    <div class="relative h-[500px] w-full hidden md:block">
+                        <!-- Card 1 -->
+                        <div class="absolute top-10 right-0 w-64 aspect-[3/4] rounded-2xl overflow-hidden border-4 border-surface-dark shadow-2xl rotate-3 z-10 hover:rotate-0 transition-transform duration-500 hover:z-30 group">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+                            <div class="absolute bottom-4 left-4 z-20">
+                                <p class="text-white font-bold">Priya &amp; Rahul</p>
+                                <p class="text-xs text-gray-300">Matched 2 months ago</p>
+                            </div>
+                            <div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-700" data-alt="Happy couple smiling at each other during sunset" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCNLNgfmrWJMiaHQPbdXwZzcfsTDZ4262DjTsPmW0ZiKJDEBLmGWhsda_vj5zeSevKMNDyIMNHmgSnkIo8Ttpt_U1uOvPs0gupysON7tiYmHgNqbdgY5MYPUVSDWtd4pbjiKlHp8cDsv1vNF512Bj1_t7suv_uAVIm3YQ81GpgTN3HfL1QyINp9dSNGZSYL5f9eoHCmSRZ6eK9NKjaR0oMN9y-rJSlsN7ELuaZWfot23Yx-zsy4UJeL39AOetajVSj-Lkrmy3qmlK4');"></div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="absolute bottom-10 left-10 w-60 aspect-[3/4] rounded-2xl overflow-hidden border-4 border-surface-dark shadow-2xl -rotate-6 z-20 hover:rotate-0 transition-transform duration-500 hover:z-30 group">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+                            <div class="absolute bottom-4 left-4 z-20">
+                                <p class="text-white font-bold">Sarah &amp; David</p>
+                                <p class="text-xs text-gray-300">Engaged</p>
+                            </div>
+                            <div class="w-full h-full bg-cover bg-center group-hover:scale-110 transition-transform duration-700" data-alt="Couple laughing together in a park setting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD205P98dwRffJUh0zZMks-rWSJ2CkspeNDOMn9wrk3zomyIxJd8KSFUszxpmUgKE59NIqCPA0DgbdDeytuFIhlD2Cg9IOZlKLIPq-12M400F_Z76sX5NgHSV0T7IZqmqVlJwufjggpXSZ42gXqi2PyDaNUASBxpuFnSbN2b3UVi5_UFYiod57u6i0OV3OXp-k-y03eAdoYuKYypHuh0f0Ul8cLqEFPcAlzaYRRUutAOb7lsq002y_nzNNW9CqwLO4eJunuw-7-mko');"></div>
+                        </div>
+                        <!-- Decorative Elements -->
+                        <div class="absolute top-[40%] left-[20%] z-30 bg-surface-dark/90 backdrop-blur-sm p-4 rounded-xl border border-border-dark shadow-lg animate-bounce duration-[3000ms]">
+                            <div class="flex items-center gap-3">
+                                <div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined">favorite</span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-white">New Match!</p>
+                                    <p class="text-xs text-gray-400">Just now</p>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Login Form Content -->
-                        <div id="login-form" class="p-6 lg:p-8 flex flex-col gap-6">
-                            <form action="{{ route('login.store') }}" method="POST">
-                                @csrf
-                                
-                                @if($errors->any())
-                                    <div class="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
-                                        <ul class="text-red-400 text-sm space-y-1">
-                                            @foreach($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-
-                                <!-- Email Input -->
-                                <div class="space-y-2">
-                                    <label class="text-white text-sm font-semibold tracking-wide flex items-center gap-2" for="login_email">
-                                        <span class="material-symbols-outlined text-[18px] text-primary">mail</span>
-                                        Email
-                                    </label>
-                                    <input class="w-full bg-[#1c1210] border border-[#543f3b] text-white text-lg px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-white/20 transition-all outline-none" 
-                                           id="login_email" 
-                                           name="email" 
-                                           type="email" 
-                                           placeholder="your@email.com"
-                                           required/>
-                                </div>
-
-                                <!-- Password Input -->
-                                <div class="space-y-2">
-                                    <label class="text-white text-sm font-semibold tracking-wide flex items-center gap-2" for="login_password">
-                                        <span class="material-symbols-outlined text-[18px] text-primary">lock</span>
-                                        Password
-                                    </label>
-                                    <input class="w-full bg-[#1c1210] border border-[#543f3b] text-white text-lg px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-white/20 transition-all outline-none" 
-                                           id="login_password" 
-                                           name="password" 
-                                           type="password" 
-                                           placeholder="••••••••"
-                                           required/>
-                                </div>
-
-                                <!-- Remember Me -->
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" id="remember" name="remember" class="rounded border-[#543f3b] bg-[#1c1210] text-primary focus:ring-primary">
-                                    <label for="remember" class="text-white/70 text-sm">Remember me</label>
-                                </div>
-
-                                <!-- Login Button -->
-                                <button type="submit" class="group relative w-full overflow-hidden rounded-lg bg-primary py-3.5 text-white shadow-md transition-all hover:bg-red-600 hover:shadow-lg hover:shadow-primary/25">
-                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-red-700">
-                                        <span class="material-symbols-outlined animate-bounce">arrow_forward</span>
-                                    </div>
-                                    <span class="relative flex items-center justify-center gap-2 text-base font-bold tracking-wide transition-transform group-hover:-translate-y-full">
-                                        Sign In
-                                    </span>
-                                </button>
-                            </form>
-
-                            <!-- Divider -->
-                            <div class="relative flex py-2 items-center">
-                                <div class="flex-grow border-t border-[#392b28]"></div>
-                                <span class="flex-shrink-0 mx-4 text-white/30 text-xs uppercase tracking-widest font-semibold">Or connect with</span>
-                                <div class="flex-grow border-t border-[#392b28]"></div>
-                            </div>
-
-                            <!-- Social Buttons -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <a href="{{ route('google.login') }}" class="flex items-center justify-center gap-3 rounded-lg border border-[#392b28] bg-white/5 px-4 py-3 text-white transition-all hover:bg-white/10 hover:border-white/20">
-                                    <svg class="h-5 w-5" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
-                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
-                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.26.81-.58z" fill="#FBBC05"></path>
-                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
-                                    </svg>
-                                    <span class="text-sm font-semibold">Google</span>
-                                </a>
-                                <button class="flex items-center justify-center gap-3 rounded-lg border border-[#392b28] bg-white/5 px-4 py-3 text-white transition-all hover:bg-white/10 hover:border-white/20" disabled>
-                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewbox="0 0 24 24">
-                                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.74 3.4 1.86-2.93 1.76-2.46 5.23.51 6.54-.61 1.54-1.39 3.06-2.56 4.61zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"></path>
-                                    </svg>
-                                    <span class="text-sm font-semibold">Apple</span>
-                                </button>
-                            </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Stats Section -->
+            <section class="border-y border-border-dark bg-surface-dark/30 py-10">
+                <div class="max-w-[1440px] mx-auto px-4 md:px-10">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <div class="flex flex-col gap-1 items-start md:items-center">
+                            <h3 class="text-4xl font-black text-white">5M+</h3>
+                            <p class="text-sm text-gray-400 uppercase tracking-widest font-bold">Verified Families</p>
                         </div>
-
-                        <!-- Footer Area -->
-                        <div class="bg-[#241614] px-6 py-4 border-t border-[#392b28] text-center">
-                            <p class="text-white/40 text-sm">
-                                By continuing, you agree to our 
-                                <a class="text-white/60 underline hover:text-primary decoration-primary/50 hover:decoration-primary transition-all" href="#">Terms</a> 
-                                and 
-                                <a class="text-white/60 underline hover:text-primary decoration-primary/50 hover:decoration-primary transition-all" href="#">Privacy Policy</a>.
+                        <div class="flex flex-col gap-1 items-start md:items-center">
+                            <h3 class="text-4xl font-black text-white">2M+</h3>
+                            <p class="text-sm text-gray-400 uppercase tracking-widest font-bold">Matches Made</p>
+                        </div>
+                        <div class="flex flex-col gap-1 items-start md:items-center">
+                            <h3 class="text-4xl font-black text-white">15</h3>
+                            <p class="text-sm text-gray-400 uppercase tracking-widest font-bold">Years of Trust</p>
+                        </div>
+                        <div class="flex flex-col gap-1 items-start md:items-center">
+                            <h3 class="text-4xl font-black text-white">100%</h3>
+                            <p class="text-sm text-gray-400 uppercase tracking-widest font-bold">Privacy Secure</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Feature Section -->
+            <section class="py-20 md:py-32 px-4 md:px-10">
+                <div class="max-w-[1200px] mx-auto flex flex-col gap-16">
+                    <div class="flex flex-col md:flex-row justify-between items-end gap-6">
+                        <div class="max-w-2xl">
+                            <h2 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-6">
+                                Experience <span class="text-primary">Modern</span> Connection
+                            </h2>
+                            <p class="text-lg text-gray-400 leading-relaxed">
+                                We've reimagined the matchmaking experience. Designed for privacy, security, and genuine relationships, moving away from endless swiping to meaningful conversations.
+                            </p>
+                        </div>
+                        <a class="text-white font-bold border-b border-primary pb-1 hover:text-primary transition-colors flex items-center gap-2 group" href="#">
+                            Learn more about safety
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Feature 1 -->
+                        <div class="bg-surface-dark border border-border-dark p-8 rounded-2xl hover:border-primary/50 transition-colors group">
+                            <div class="size-14 rounded-full bg-background-dark border border-border-dark flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-primary text-2xl">verified_user</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-3">Verified Profiles</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed">
+                                Strict ID verification ensuring real people only. We manually vet profiles to maintain a high-quality community.
+                            </p>
+                        </div>
+                        <!-- Feature 2 -->
+                        <div class="bg-surface-dark border border-border-dark p-8 rounded-2xl hover:border-primary/50 transition-colors group">
+                            <div class="size-14 rounded-full bg-background-dark border border-border-dark flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-primary text-2xl">lock</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-3">Secure Chat</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed">
+                                End-to-end encrypted conversations. Your first hello stays between you two until you decide to take it further.
+                            </p>
+                        </div>
+                        <!-- Feature 3 -->
+                        <div class="bg-surface-dark border border-border-dark p-8 rounded-2xl hover:border-primary/50 transition-colors group">
+                            <div class="size-14 rounded-full bg-background-dark border border-border-dark flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-primary text-2xl">visibility_off</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-3">Privacy First</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed">
+                                Granular controls on who sees your photos and data. You control your visibility settings completely.
                             </p>
                         </div>
                     </div>
-
-                    <!-- Help Link & Sign Up Link -->
-                    <div class="text-center space-y-3">
-                        <a class="text-white/50 text-sm font-medium hover:text-primary transition-colors flex items-center justify-center gap-1 group/link" href="#">
-                            Forgot Password?
-                            <span class="material-symbols-outlined text-[16px] transition-transform group-hover/link:translate-x-1">arrow_right_alt</span>
-                        </a>
-                        <div class="text-white/60 text-sm">
-                            Don't have an account? 
-                            <a href="{{ route('signup') }}" class="text-primary font-semibold hover:text-red-400 transition-colors">Sign up</a>
+                </div>
+            </section>
+            
+            <!-- Success Stories (Visual Grid) -->
+            <section class="py-20 bg-surface-dark/20 border-t border-border-dark">
+                <div class="max-w-[1440px] mx-auto px-4 md:px-10">
+                    <div class="flex flex-col items-center text-center mb-16">
+                        <span class="text-primary font-bold tracking-widest uppercase text-sm mb-4">Real Stories</span>
+                        <h2 class="text-4xl md:text-5xl font-black text-white mb-6">From First Hello to Forever</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">See how thousands of couples found their perfect match on our platform.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-auto md:h-[500px]">
+                        <!-- Story 1 - Large -->
+                        <div class="col-span-1 md:col-span-2 row-span-2 rounded-2xl overflow-hidden relative group cursor-pointer">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
+                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-4 group-hover:translate-y-0 transition-transform">
+                                <h3 class="text-2xl font-bold text-white mb-2">Ananya &amp; Vikram</h3>
+                                <p class="text-gray-200 text-sm line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity">"We met through the app and instantly connected over our love for travel. Two years later, we are exploring the world together."</p>
+                            </div>
+                            <div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Close up of a couple holding hands showing engagement rings" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBJJvuOTZf0SBMNuQ8wPWA8AwwQkPOti4dSPedA2MsZzkDoCReP684HdvKtDtfUgaqJW8omJfOZnd3FIUxDogRmu0tFbcCKCzScO7_31rmcW_t7DaBRnuKrb7s1y7gK9Ku3kJ994v9Tj6wLgMgUo8JK26NvXXrNiVu9bbo7hyNU2TbtUFtx9WXLEXMv7XrV-wsQbj8e2HX5TmZj45orQ21YXd-GiegPOFcsNSD0e7vYhB2XXthaQyRk57367s7I9oNNNh4uqbfIb6E');"></div>
+                        </div>
+                        <!-- Story 2 -->
+                        <div class="col-span-1 rounded-2xl overflow-hidden relative group cursor-pointer min-h-[240px]">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
+                            <div class="absolute bottom-6 left-6 z-20">
+                                <h3 class="text-lg font-bold text-white">Rohan &amp; Meera</h3>
+                            </div>
+                            <div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Couple sitting in a cafe talking and smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCJFthQNMRzj9vur8utuLaXGYZ137aRoNA5n48u84xXyEuTHnL7iWx_x1N62TnEFc8XHgb50rmbehGUeUTdf4wCizPobZbqjLXZ8QDov1Vnmfs0CbNsSUikk77ufixkXM5-78gmjNt1cBKdQ87eDi5Ih3gg8hp85lW4TRjYwaJZ97MlgMivZYyRAMu576Bw2pM0-O4WIgJoy56lYEjnPCXiU3EsXofwDFSnf6ysUSOD98QuwoIj3b-1F1ym88nH5hD2tUYZlDmjF5k');"></div>
+                        </div>
+                        <!-- Story 3 -->
+                        <div class="col-span-1 rounded-2xl overflow-hidden relative group cursor-pointer min-h-[240px]">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
+                            <div class="absolute bottom-6 left-6 z-20">
+                                <h3 class="text-lg font-bold text-white">Aditya &amp; Sneha</h3>
+                            </div>
+                            <div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Couple walking on a beach during sunset" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCNDaAhbCNg6XXsv3CiarvGn2nw9yZQZtwu8Tww_NVMjIPA2opT8HAQPF8lP9BL0YD7NJCnA-jLpkjqTVvubAV7SiVYwKAEzjniH3qmt3SVsQjY2f8aAOClCTmZQpy7kGXh1bjupAozaN_Yr4qP3MQpkVw8KqefcWgkuesnaseRUTHXOgNB_SzPZw5EqB2QwswsEE_7_MGtuN-M2PCmmvMoVwUgZX1YzvDsv_oI7ZX9u94xq3AIkDlQKmbcZcpRq_rb--eqjpbFMpU');"></div>
+                        </div>
+                        <!-- Story 4 (Wide) -->
+                        <div class="col-span-1 md:col-span-2 lg:col-span-2 rounded-2xl overflow-hidden relative group cursor-pointer min-h-[240px]">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
+                            <div class="absolute bottom-6 left-6 z-20">
+                                <h3 class="text-xl font-bold text-white">The Kapoor Wedding</h3>
+                            </div>
+                            <div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Large traditional Indian wedding ceremony" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC3fjUk6kjKGLdj2cQJPIP8GNAwR5WYdEHC6geOCrUWjlofzuuzFKWpAOSZOQd19QtlSIEb-Yus7SJ_-Q55PKgyP6zaRVMq0soVQHmKTtqqMeHPm7VFLRx355Pe9c30Pkw1Wm49YSb_quLenKlDfHvuWSeorkJZbjJ9KU45u09PpTXcMooRh4B_i2EgV1ggQT0Wb2qiol3XS-HUfRuXJQM0bbqxVp7OEYA14NvfGUH1Xmvd4OdMEcbMCrU8ZqVbc3mJ1FmMXcc3-DY');"></div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+            
+            <!-- How It Works -->
+            <section class="py-20 md:py-32 px-4 md:px-10">
+                <div class="max-w-[1000px] mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div class="order-2 md:order-1 relative">
+                            <!-- Phone Mockup Abstract -->
+                            <div class="relative w-full aspect-[3/4] bg-surface-dark border border-border-dark rounded-3xl overflow-hidden shadow-2xl">
+                                <div class="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-6 bg-black rounded-full z-20"></div>
+                                <div class="w-full h-full bg-cover bg-center opacity-60 mix-blend-overlay" data-alt="Abstract gradient mesh representing app interface" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDa69j0owwWyXhENMsawLt1Jqc0i4iJECyzrtcCRIfZmVN2J8fFRS2UPFklN0F9TV-OvnSHqbVyZbHHkTpylFosOrZKhNgd6JivYhBLoLDrMCJJdfYFJXgeYXaLKwRHlKaVN_613OhEpB6yayKHRL2--oCjQqPNoPUQ7NvpZz-YHYvQuRWWDj0y5lN_-Nel28kxFrNRRSuq-CcF4xgBrKKpUCO3vPr5ya9IABLW8u37VG-HEhihSdUMseugWR6VeNpRwrztqZ3ZaiA');"></div>
+                                <div class="absolute bottom-10 left-6 right-6 p-4 bg-background-dark/90 backdrop-blur-md rounded-xl border border-border-dark">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="size-8 rounded-full bg-gray-600"></div>
+                                        <div class="h-2 w-20 bg-gray-600 rounded"></div>
+                                    </div>
+                                    <div class="h-2 w-full bg-gray-700 rounded mb-2"></div>
+                                    <div class="h-2 w-2/3 bg-gray-700 rounded"></div>
+                                    <div class="mt-4 w-full h-8 bg-primary rounded-lg flex items-center justify-center text-xs font-bold text-white">Connect</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="order-1 md:order-2 flex flex-col gap-10">
+                            <div>
+                                <h2 class="text-4xl font-black text-white mb-4">Simple Steps to <br/>Your Soulmate</h2>
+                                <p class="text-gray-400">Our intelligent algorithm does the heavy lifting, so you can focus on what matters.</p>
+                            </div>
+                            <div class="flex flex-col gap-8">
+                                <div class="flex gap-6 group">
+                                    <div class="flex flex-col items-center">
+                                        <div class="size-10 rounded-full bg-surface-dark border border-border-dark text-white font-bold flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-colors">1</div>
+                                        <div class="w-px h-full bg-border-dark my-2 group-last:hidden"></div>
+                                    </div>
+                                    <div class="pb-8">
+                                        <h4 class="text-xl font-bold text-white mb-2">Create Profile</h4>
+                                        <p class="text-sm text-gray-400">Sign up for free and tell us about yourself and what you are looking for.</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-6 group">
+                                    <div class="flex flex-col items-center">
+                                        <div class="size-10 rounded-full bg-surface-dark border border-border-dark text-white font-bold flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-colors">2</div>
+                                        <div class="w-px h-full bg-border-dark my-2 group-last:hidden"></div>
+                                    </div>
+                                    <div class="pb-8">
+                                        <h4 class="text-xl font-bold text-white mb-2">Get Matches</h4>
+                                        <p class="text-sm text-gray-400">Receive daily curated matches based on your preferences and compatibility.</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-6 group">
+                                    <div class="flex flex-col items-center">
+                                        <div class="size-10 rounded-full bg-surface-dark border border-border-dark text-white font-bold flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-colors">3</div>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-white mb-2">Start Connecting</h4>
+                                        <p class="text-sm text-gray-400">Chat securely and get to know your potential partner at your own pace.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- CTA Section -->
+            <section class="py-24 px-4 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-primary/10"></div>
+                <div class="relative max-w-4xl mx-auto text-center flex flex-col items-center gap-8">
+                    <h2 class="text-5xl md:text-7xl font-black text-white leading-tight">
+                        Ready to write your <br/> own <span class="text-primary italic">story?</span>
+                    </h2>
+                    <p class="text-xl text-gray-400 max-w-xl">
+                        Join the community of millions who believe in love. Your journey begins with a single click.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                        @auth
+                            <a href="{{ route('dashboard') }}" class="bg-primary hover:bg-red-600 text-white text-lg px-8 py-4 rounded-full font-bold transition-all hover:shadow-[0_0_40px_-10px_rgba(236,55,19,0.5)]">
+                                Go to Dashboard
+                            </a>
+                        @else
+                            <a href="{{ route('signup') }}" class="bg-primary hover:bg-red-600 text-white text-lg px-8 py-4 rounded-full font-bold transition-all hover:shadow-[0_0_40px_-10px_rgba(236,55,19,0.5)]">
+                                Begin Your Journey
+                            </a>
+                        @endauth
+                        <a href="{{ route('success-stories') }}" class="bg-transparent border border-gray-600 hover:border-white text-white text-lg px-8 py-4 rounded-full font-bold transition-colors">
+                            View Success Stories
+                        </a>
+                    </div>
+                </div>
+            </section>
         </main>
+        
+        <!-- Footer -->
+        <footer class="bg-surface-dark border-t border-border-dark pt-16 pb-8 px-4 md:px-10">
+            <div class="max-w-[1440px] mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                    <div class="flex flex-col gap-6">
+                        <div class="flex items-center gap-3">
+                            <div class="size-6 text-primary">
+                                <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path clip-rule="evenodd" d="M24 4C12.9543 4 4 12.9543 4 24C4 35.0457 12.9543 44 24 44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4ZM16.2 34.6L16.2 13.4L18.6 13.4L24 26.8L29.4 13.4L31.8 13.4L31.8 34.6L29.4 34.6L29.4 18.2L25 29H23L18.6 18.2V34.6H16.2Z" fill="currentColor" fill-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xl font-extrabold text-white tracking-tight">TrueUnion</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            The most trusted platform for finding genuine life partners. Safe, secure, and designed for you.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6">Company</h4>
+                        <ul class="flex flex-col gap-3 text-sm text-gray-400">
+                            <li><a class="hover:text-primary transition-colors" href="{{ route('about') }}">About Us</a></li>
+                            <li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
+                            <li><a class="hover:text-primary transition-colors" href="#">Blog</a></li>
+                            <li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6">Support</h4>
+                        <ul class="flex flex-col gap-3 text-sm text-gray-400">
+                            <li><a class="hover:text-primary transition-colors" href="#">Help Center</a></li>
+                            <li><a class="hover:text-primary transition-colors" href="#">Safety Tips</a></li>
+                            <li><a class="hover:text-primary transition-colors" href="{{ route('terms') }}">Terms of Service</a></li>
+                            <li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6">Get the App</h4>
+                        <div class="flex flex-col gap-3">
+                            <button class="flex items-center gap-3 bg-background-dark border border-border-dark hover:border-white/40 p-3 rounded-xl transition-colors group text-left w-fit">
+                                <span class="material-symbols-outlined text-white text-3xl">android</span>
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold">Get it on</p>
+                                    <p class="text-sm text-white font-bold">Google Play</p>
+                                </div>
+                            </button>
+                            <button class="flex items-center gap-3 bg-background-dark border border-border-dark hover:border-white/40 p-3 rounded-xl transition-colors group text-left w-fit">
+                                <span class="material-symbols-outlined text-white text-3xl">phone_iphone</span>
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold">Download on the</p>
+                                    <p class="text-sm text-white font-bold">App Store</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-8 border-t border-border-dark flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
+                    <p>© 2024 Matrimony Inc. All rights reserved.</p>
+                    <div class="flex gap-6">
+                        <a class="hover:text-white transition-colors" href="#">Instagram</a>
+                        <a class="hover:text-white transition-colors" href="#">Twitter</a>
+                        <a class="hover:text-white transition-colors" href="#">Facebook</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
-
-    <script>
-        // Auto-focus email input on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const emailInput = document.getElementById('login_email');
-            if (emailInput) {
-                emailInput.focus();
-            }
-        });
-    </script>
 </body>
 </html>

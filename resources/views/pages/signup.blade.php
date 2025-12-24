@@ -429,7 +429,7 @@
                                class="mt-1 h-4 w-4 rounded border-gray-300 dark:border-[#543f3b] bg-gray-50 dark:bg-[#181211] text-primary focus:ring-primary cursor-pointer" 
                                required/>
                         <label for="terms" class="text-sm text-slate-600 dark:text-gray-300 font-body">
-                            I agree to the <a href="#" class="text-primary hover:underline">Terms and Conditions</a> and <a href="#" class="text-primary hover:underline">Privacy Policy</a> <span class="text-primary">*</span>
+                            I agree to the <a href="{{ route('terms') }}" class="text-primary hover:underline" target="_blank">Terms and Conditions</a> and <a href="#" class="text-primary hover:underline">Privacy Policy</a> <span class="text-primary">*</span>
                         </label>
             </div>
 

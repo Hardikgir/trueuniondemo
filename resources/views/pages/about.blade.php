@@ -1,81 +1,303 @@
-@extends('layouts.app')
-
-@section('title', __('About Us'))
-
-@section('content')
-<div class="content-container max-w-6xl mx-auto p-0 overflow-hidden">
-
-    <!-- Hero Section -->
-    <section class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-16 px-6 rounded-lg">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">{{ __('about_title') }}</h1>
-            <p class="text-lg sm:text-xl text-indigo-100">
-                {{ __('about_subtitle') }}
-            </p>
-        </div>
-    </section>
-
-    <!-- Mission & Values -->
-    <section class="py-16 px-6">
-        <div class="max-w-4xl mx-auto text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">{{ __('mission_values_title') }}</h2>
-            <p class="text-gray-600">
-                {{ __('mission_values_desc') }}
-            </p>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div class="p-6 bg-white rounded-lg shadow-md text-center">
-                <h3 class="text-xl font-semibold mb-2 text-indigo-600">{{ __('value_trust') }}</h3>
-                <p class="text-gray-600">{{ __('value_trust_desc') }}</p>
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>About Us - Modern Matrimony</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec3713",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#181211",
+                        "surface-dark": "#271d1c",
+                        "surface-border": "#543f3b",
+                        "text-secondary": "#b9a19d"
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "sans": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #181211; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #392b28; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ec3713; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-black dark:text-white font-display overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+    <div class="relative flex flex-col min-h-screen w-full">
+        @include('partials.top-navbar')
+        
+        <!-- Main Content Wrapper -->
+        <main class="flex flex-col flex-1 w-full max-w-[1280px] mx-auto px-4 lg:px-20 py-8 lg:py-12 gap-16 lg:gap-24">
+            <!-- Hero Section -->
+            <section class="relative rounded-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
+                <!-- Abstract Background with Overlay -->
+                <div class="absolute inset-0 z-0 bg-cover bg-center" data-alt="Abstract dark bokeh lights background representing connection" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD0mRWbgpXHsEeAUMiX1X-9HdUpnrTlCwWLg8F8FououfpFV95LcuoUc4eku-ouUP5HFsIjDfvNyrZJpJRJG3uWSbSCuC50Frz2DFLPBeNZnmInlYmNk4HEf_OQWoe0aiezCPBXc_sdIl8rJjc5xQ7SvhCHwv2ellCs1rYz2eHn7fVQfFkjkmMmQSfuZFcPtC-GpNsQORazimtPykbGQWpxvotFCtSMFMFbUy3jwZVdwA7tPDGaMKf44yMwe0atyYT-NovWf_Z4Lz8');">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent z-10"></div>
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <div class="relative z-20 flex flex-col items-center text-center max-w-4xl px-4 gap-6">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        <span class="text-xs font-semibold tracking-wider uppercase text-white/90">Since 2024</span>
+                    </div>
+                    <h1 class="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+                        We Connect <span class="text-primary italic">Lives</span>, <br/> Not Just Profiles.
+                    </h1>
+                    <p class="text-lg lg:text-xl text-text-secondary max-w-2xl font-light leading-relaxed">
+                        Modern matchmaking for serious commitments. We are redefining how tradition meets technology in a chaotic digital world.
+                    </p>
+                </div>
+            </section>
+            
+            <!-- Mission Statement (Card Variant) -->
+            <section class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                <div class="relative group rounded-xl overflow-hidden aspect-[4/3] lg:aspect-auto lg:h-full min-h-[400px]">
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Abstract connection lines or nodes glowing in dark representing intelligent matching" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAZS7ko61R0VjuAM4SnEVTPPU6Xa7BtcKPJstRjvu9i28yL60KegHYV7XJKbPkJKbJyU--1FtJxEBLzsI1QLaIx5AxaCPxmb1TZ2vyrJy59ZnjbSjgPd-ZcWpltwD5CNUJxxHftIGlWl_icfiB6CaaYU0WyPKqUl9zEFbViNZlqW0TuiZMwQ2S92eKa5PxIme2VNhJPq-qK4O1SgME_8J4JEgIstfH_N5ubl2rA8wMTfOBs_EDsvvn_hqThOghjtNg9Us9Lp9klFC8');">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-background-dark/90 to-transparent"></div>
+                    <div class="absolute bottom-8 left-8 right-8">
+                        <p class="text-white text-2xl font-bold">The Science of Connection</p>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center space-y-8">
+                    <div class="space-y-4">
+                        <h2 class="text-sm font-bold tracking-widest uppercase text-primary">Our Mission</h2>
+                        <p class="text-3xl lg:text-4xl font-bold leading-tight">
+                            Eliminating the noise of dating apps to restore the sanctity of finding a life partner.
+                        </p>
+                    </div>
+                    <div class="space-y-6">
+                        <p class="text-text-secondary text-lg leading-relaxed">
+                            In an era of endless swiping and superficial judgments, we built a platform grounded in verified data, serious intent, and intelligent compatibility. We believe that finding a partner is one of life's most significant journeys, and it deserves a dignified, precise approach.
+                        </p>
+                        <div class="pl-6 border-l-4 border-primary/30">
+                            <p class="text-white/90 italic text-xl">"We don't just match profiles; we align futures."</p>
+                        </div>
+                    </div>
+                    <button class="w-fit flex items-center gap-2 text-white font-semibold hover:text-primary transition-colors group">
+                        Read Our Manifesto 
+                        <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Stats Section -->
+            <section class="border-y border-surface-border py-12">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 text-center lg:text-left">
+                    <div class="flex flex-col gap-2">
+                        <p class="text-5xl lg:text-6xl font-bold text-white tracking-tighter">10k+</p>
+                        <p class="text-primary font-medium text-sm uppercase tracking-wide">Matches Made</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class="text-5xl lg:text-6xl font-bold text-white tracking-tighter">5</p>
+                        <p class="text-primary font-medium text-sm uppercase tracking-wide">Years of Service</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class="text-5xl lg:text-6xl font-bold text-white tracking-tighter">100%</p>
+                        <p class="text-primary font-medium text-sm uppercase tracking-wide">Verified Profiles</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class="text-5xl lg:text-6xl font-bold text-white tracking-tighter">24/7</p>
+                        <p class="text-primary font-medium text-sm uppercase tracking-wide">Human Support</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Core Values -->
+            <section class="flex flex-col gap-12">
+                <div class="max-w-2xl">
+                    <h2 class="text-3xl lg:text-5xl font-bold mb-4">Core Values</h2>
+                    <p class="text-text-secondary text-lg">The principles that guide every feature we build and every match we suggest.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Value 1 -->
+                    <div class="group flex flex-col gap-6 p-8 rounded-2xl bg-surface-dark border border-surface-border hover:border-primary/50 transition-all duration-300">
+                        <div class="w-12 h-12 rounded-full bg-surface-border/50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined">visibility</span>
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-xl font-bold text-white">Transparency</h3>
+                            <p class="text-text-secondary leading-relaxed">
+                                We don't hide behind black-box algorithms. You understand why you matched and what compatibility means.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Value 2 -->
+                    <div class="group flex flex-col gap-6 p-8 rounded-2xl bg-surface-dark border border-surface-border hover:border-primary/50 transition-all duration-300">
+                        <div class="w-12 h-12 rounded-full bg-surface-border/50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined">encrypted</span>
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-xl font-bold text-white">Security</h3>
+                            <p class="text-text-secondary leading-relaxed">
+                                Your data is yours alone. We employ enterprise-grade encryption and strict verification processes.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Value 3 -->
+                    <div class="group flex flex-col gap-6 p-8 rounded-2xl bg-surface-dark border border-surface-border hover:border-primary/50 transition-all duration-300">
+                        <div class="w-12 h-12 rounded-full bg-surface-border/50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined">diversity_1</span>
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-xl font-bold text-white">Empathy</h3>
+                            <p class="text-text-secondary leading-relaxed">
+                                Technology with a human touch. Our support team is available to guide you at every step of the journey.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Team Section -->
+            <section class="flex flex-col gap-12 py-8">
+                <div class="flex flex-col md:flex-row justify-between items-end gap-6">
+                    <div class="max-w-xl">
+                        <h2 class="text-3xl lg:text-5xl font-bold mb-4">Meet the Leadership</h2>
+                        <p class="text-text-secondary text-lg">The minds dedicated to helping you find your heart.</p>
+                    </div>
+                    <a class="hidden md:flex items-center gap-2 text-primary font-semibold hover:text-white transition-colors" href="#">
+                        View all careers <span class="material-symbols-outlined">arrow_outward</span>
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Team Member 1 -->
+                    <div class="flex flex-col gap-4 group">
+                        <div class="relative overflow-hidden rounded-full aspect-square bg-surface-dark border border-surface-border">
+                            <img alt="Portrait of James Carter, CEO" class="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" data-alt="Professional headshot of man in suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6oN8y3ZdSDjLsSPG19FV3dkXYIXnqYs6_j8uaadOXoK7GtoNgTz36C-R5YHyxtB1XEiCd2Pr37yjd2fDDg2_M7lpd78OGo7SWxnhTE6Acvjb_UytgJZ_qDEJPB81Q1PiU8plTWPQ6v1PGCP6seUIiLwh_BJMCR_FNVJ74XkgcHhab16hhAIdy78S3IknNVpDxyWRb793HLCsF_oKrOUZbASmQQuGNGjn6fSsuQvvwwgaoSG0gKhLPbFkdTAi_p8RQY6os3W3E_ZA"/>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-lg font-bold text-white">James Carter</h3>
+                            <p class="text-primary text-sm font-medium">Founder &amp; CEO</p>
+                        </div>
+                    </div>
+                    <!-- Team Member 2 -->
+                    <div class="flex flex-col gap-4 group">
+                        <div class="relative overflow-hidden rounded-full aspect-square bg-surface-dark border border-surface-border">
+                            <img alt="Portrait of Sarah Lin, CTO" class="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" data-alt="Professional headshot of woman with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUeHpcJUFvYi1aQp_A5LvpPQMWkvBF-eDij7b-VinkJSW9GcWW3qIVx7ZPC6qb6Y0V5j2m54SNHh2-Wcsb_Q4iWb1wpKxfwaj2L67W0aPg4rw3xnc-8QNKZkon0W70yvZUdOZ_oTPNd3jC3NYUPvZBzPvsWRPgJzN3XpoTwbBAHKSzGsyo0x23EsoIn1JWhVgngJLVItBOb65NZccYie4PKlJLjnTUDyKp_TPM7ZGOcBbVxDs3IX2uHuYXKbwM7edQURxa-lBM2KI"/>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-lg font-bold text-white">Sarah Lin</h3>
+                            <p class="text-primary text-sm font-medium">Head of Technology</p>
+                        </div>
+                    </div>
+                    <!-- Team Member 3 -->
+                    <div class="flex flex-col gap-4 group">
+                        <div class="relative overflow-hidden rounded-full aspect-square bg-surface-dark border border-surface-border">
+                            <img alt="Portrait of David Rossi, Head of Trust" class="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" data-alt="Professional headshot of man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDKujGwe-tbmwNOxJBqkFvFLl6gQ9nvcyZr0VZb4Jzm9YRHtHmglz-tYpeEifE6ng2L59iYHjZ19CCDt47Za6CZB7dxTPWK8hqyl4UOEpC0wcsGI4HQKYbTNlsYfgtzuwyHJuE5gtTH_TEv2csmgu35G5adU4FSlIj5Ysi4v2XVMLDY0H5deF3e3YupiMQIYmwlia_IhtYB3SFI8quq93b2aKaOKQu4uXkyhaLg-QHnObPE9KTWpnVOCK2gw239HBWa46z3xhyfOQ"/>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-lg font-bold text-white">David Rossi</h3>
+                            <p class="text-primary text-sm font-medium">Head of Trust &amp; Safety</p>
+                        </div>
+                    </div>
+                    <!-- Team Member 4 -->
+                    <div class="flex flex-col gap-4 group">
+                        <div class="relative overflow-hidden rounded-full aspect-square bg-surface-dark border border-surface-border">
+                            <img alt="Portrait of Elena Gomez, Lead Psychologist" class="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110" data-alt="Professional headshot of woman smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5Or5Uxc6vfbUqBB0TwZUw64sYYMP2ocALyoXviv-pKMe9Ltmji4y9IwhPtWjAhJC6xhsjx-n6qkucVTQ058rkkKwhuU494ZtPv4HsuTzx2nGE8NIvzoJqobTim1tOrirvtK_WEu6ANaXVD-7YNZcinjtY3QtNe4vyZ6tk9sgerBsnKpazJQpDmT8t0990rYT-d45s4pzSIQgm6f8lprfT4wvlctxZrndmFE11mHkBejSKIpyhfcxWAbTDh_1MAkGZOrk45xlzQzM"/>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-lg font-bold text-white">Elena Gomez</h3>
+                            <p class="text-primary text-sm font-medium">Lead Psychologist</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- CTA Section -->
+            <section class="relative rounded-3xl bg-primary/10 border border-primary/20 p-8 lg:p-16 text-center overflow-hidden my-8">
+                <div class="absolute -top-24 -left-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
+                <div class="relative z-10 flex flex-col items-center gap-6">
+                    <h2 class="text-3xl lg:text-5xl font-bold text-white">Ready for a serious commitment?</h2>
+                    <p class="text-text-secondary max-w-2xl text-lg">Join thousands of verified members who have found their life partners through our intelligent matchmaking.</p>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="mt-4 flex min-w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-8 bg-primary hover:bg-red-600 transition-colors text-white text-base font-bold tracking-wide shadow-lg shadow-primary/25">
+                            Go to Dashboard
+                        </a>
+                    @else
+                        <a href="{{ route('signup') }}" class="mt-4 flex min-w-[160px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-8 bg-primary hover:bg-red-600 transition-colors text-white text-base font-bold tracking-wide shadow-lg shadow-primary/25">
+                            Start Your Journey
+                        </a>
+                    @endauth
+                </div>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-[#100c0b] border-t border-[#392b28] pt-16 pb-8 px-6 lg:px-20">
+            <div class="max-w-[1280px] mx-auto flex flex-col gap-12">
+                <div class="flex flex-col lg:flex-row justify-between gap-10">
+                    <div class="flex flex-col gap-4 max-w-sm">
+                        <div class="flex items-center gap-3 text-white">
+                            <span class="material-symbols-outlined text-primary !text-[28px]">favorite</span>
+                            <span class="text-xl font-bold">Matrimony</span>
+                        </div>
+                        <p class="text-text-secondary text-sm leading-relaxed">
+                            The most trusted platform for serious relationships. We are committed to helping you find your perfect match with privacy and integrity.
+                        </p>
+                    </div>
+                    <div class="flex gap-16 flex-wrap">
+                        <div class="flex flex-col gap-4">
+                            <h4 class="text-white font-bold text-sm uppercase tracking-wider">Company</h4>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="{{ route('about') }}">About</a>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="#">Careers</a>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="#">Press</a>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <h4 class="text-white font-bold text-sm uppercase tracking-wider">Legal</h4>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="#">Privacy Policy</a>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="{{ route('terms') }}">Terms of Service</a>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="#">Safety Tips</a>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <h4 class="text-white font-bold text-sm uppercase tracking-wider">Social</h4>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="#">Instagram</a>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="#">Twitter</a>
+                            <a class="text-text-secondary hover:text-primary text-sm transition-colors" href="#">LinkedIn</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-[#392b28] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-text-secondary text-xs">© 2024 Matrimony Inc. All rights reserved.</p>
+                    <div class="flex gap-4">
+                        <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#271d1c] text-text-secondary hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                            <span class="material-symbols-outlined text-sm">mail</span>
+                        </span>
+                    </div>
+                </div>
             </div>
-            <div class="p-6 bg-white rounded-lg shadow-md text-center">
-                <h3 class="text-xl font-semibold mb-2 text-indigo-600">{{ __('value_innovation') }}</h3>
-                <p class="text-gray-600">{{ __('value_innovation_desc') }}</p>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-md text-center">
-                <h3 class="text-xl font-semibold mb-2 text-indigo-600">{{ __('value_community') }}</h3>
-                <p class="text-gray-600">{{ __('value_community_desc') }}</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Company Details -->
-    <section class="bg-gray-50 py-16 px-6 rounded-lg">
-        <div class="max-w-5xl mx-auto text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">{{ __('who_we_are_title') }}</h2>
-            <p class="text-gray-600">
-                {{ __('who_we_are_desc') }}
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto text-center">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-semibold text-indigo-600 mb-2">{{ __('our_story_title') }}</h3>
-                <p class="text-gray-600">
-                    {{ __('our_story_desc') }}
-                </p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-semibold text-indigo-600 mb-2">{{ __('our_impact_title') }}</h3>
-                <p class="text-gray-600">
-                    {{ __('our_impact_desc') }}
-                </p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-semibold text-indigo-600 mb-2">{{ __('our_vision_title') }}</h3>
-                <p class="text-gray-600">
-                    {{ __('our_vision_desc') }}
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Call to Action -->
-    <section class="py-16 px-6 text-center">
-        <h2 class="text-3xl font-bold text-gray-800 mb-4">{{ __('cta_title') }}</h2>
-        <p class="text-gray-600 mb-6">{{ __('cta_desc') }}</p>
-        <a href="{{ route('contact') }}" class="select-btn max-w-xs mx-auto block">{{ __('Contact Us') }}</a>
-    </section>
-
-</div>
-@endsection
+        </footer>
+    </div>
+</body>
+</html>

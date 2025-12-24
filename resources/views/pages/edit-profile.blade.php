@@ -37,59 +37,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 </head>
 <body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 min-h-screen flex flex-col overflow-x-hidden transition-colors duration-300">
-    @include('partials.user-navbar')
-
-    <div class="flex flex-1 layout-container w-full max-w-[1440px] mx-auto">
-        <!-- Sidebar Navigation -->
-        <aside class="hidden lg:flex w-72 flex-col gap-6 py-8 px-6 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto border-r border-gray-200 dark:border-[#392b28]">
-            <div class="flex items-center gap-4 mb-6">
-                <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-primary" 
-                     style='background-image: url("{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->full_name) . '&background=ec3713&color=fff' }}");'></div>
-                <div class="flex flex-col">
-                    <h1 class="text-gray-900 dark:text-white text-lg font-bold">{{ $user->full_name }}</h1>
-                    <p class="text-gray-500 dark:text-[#b9a19d] text-xs font-mono">ID: M-{{ str_pad($user->id, 6, '0', STR_PAD_LEFT) }}</p>
-                </div>
-            </div>
-            <nav class="flex flex-col gap-2">
-                <a class="flex items-center gap-4 px-4 py-3 rounded-full bg-primary text-white shadow-lg shadow-primary/20 group" href="#overview">
-                    <span class="material-symbols-outlined filled text-[20px]">person</span>
-                    <span class="text-sm font-bold tracking-wide">Overview</span>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-surface-dark hover:text-gray-900 dark:hover:text-white transition-all group" href="#basic-info">
-                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">badge</span>
-                    <span class="text-sm font-medium">Basic Info</span>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-surface-dark hover:text-gray-900 dark:hover:text-white transition-all group" href="#career">
-                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">work</span>
-                    <span class="text-sm font-medium">Career &amp; Education</span>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-surface-dark hover:text-gray-900 dark:hover:text-white transition-all group" href="#family">
-                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">diversity_3</span>
-                    <span class="text-sm font-medium">Family Background</span>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-surface-dark hover:text-gray-900 dark:hover:text-white transition-all group" href="#lifestyle">
-                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">local_cafe</span>
-                    <span class="text-sm font-medium">Lifestyle</span>
-                </a>
-                <a class="flex items-center gap-4 px-4 py-3 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-surface-dark hover:text-gray-900 dark:hover:text-white transition-all group" href="#photos">
-                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">photo_library</span>
-                    <span class="text-sm font-medium">Photos</span>
-                </a>
-            </nav>
-            <div class="mt-auto">
-                <div class="rounded-xl bg-gradient-to-br from-gray-800 to-black p-4 border border-gray-700">
-                    <div class="flex items-center gap-2 mb-2 text-white/80 text-xs uppercase tracking-widest font-bold">
-                        <span class="material-symbols-outlined text-primary text-sm">verified_user</span>
-                        Security
-                    </div>
-                    <p class="text-xs text-gray-400 mb-3">Your profile is visible only to verified members.</p>
-                    <a class="text-primary text-xs font-bold hover:underline" href="#">Privacy Settings</a>
-                </div>
-            </div>
-        </aside>
-
+    <div class="flex flex-1 overflow-hidden">
+        @include('partials.user-sidebar')
+        
         <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-[1120px] mx-auto w-full">
+        <main class="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-[1400px] mx-auto w-full overflow-y-auto lg:ml-80">
             <!-- Success Message -->
             @if(session('success'))
                 <div class="bg-green-500/20 border border-green-500 text-green-300 px-4 py-3 rounded-lg">
@@ -106,7 +58,7 @@
                         Last login: {{ $user->updated_at ? $user->updated_at->diffForHumans() : 'Recently' }}
                     </p>
                 </div>
-                <a href="{{ route('profile.view', $user->id) }}" class="hidden md:flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
+                <a href="{{ route('profile.view', $user) }}" class="hidden md:flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined text-lg">visibility</span>
                     Preview Public View
                 </a>
@@ -199,19 +151,19 @@
                             <div class="sm:col-span-2">
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-2">Date of Birth</p>
                                 <div class="flex gap-2 flex-wrap">
-                                    <select name="birth_day" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none flex-1 min-w-[80px]">
+                                    <select name="birth_day" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none flex-1 min-w-[80px] px-2 py-1 rounded">
                                         <option value="">Day</option>
                                         @for($i = 1; $i <= 31; $i++)
                                             <option value="{{ $i }}" {{ old('birth_day', $birthDay) == $i ? 'selected' : '' }}>{{ $i }}</option>
                                         @endfor
                                     </select>
-                                    <select name="birth_month" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none flex-1 min-w-[100px]">
+                                    <select name="birth_month" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none flex-1 min-w-[100px] px-2 py-1 rounded">
                                         <option value="">Month</option>
                                         @for($i = 1; $i <= 12; $i++)
                                             <option value="{{ $i }}" {{ old('birth_month', $birthMonth) == $i ? 'selected' : '' }}>{{ date('M', mktime(0,0,0,$i,1)) }}</option>
                                         @endfor
                                     </select>
-                                    <select name="birth_year" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none flex-1 min-w-[100px]">
+                                    <select name="birth_year" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none flex-1 min-w-[100px] px-2 py-1 rounded">
                                         <option value="">Year</option>
                                         @for($i = date('Y'); $i >= 1950; $i--)
                                             <option value="{{ $i }}" {{ old('birth_year', $birthYear) == $i ? 'selected' : '' }}>{{ $i }}</option>
@@ -221,7 +173,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-2">Gender</p>
-                                <select name="gender" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="gender" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>Male</option>
                                     <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>Female</option>
@@ -229,7 +181,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Mother Tongue</p>
-                                <select name="mother_tongue" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="mother_tongue" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     @foreach($motherTongues as $mt)
                                         <option value="{{ $mt->title }}" {{ old('mother_tongue', $user->mother_tongue) == $mt->title ? 'selected' : '' }}>{{ $mt->title }}</option>
@@ -238,7 +190,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Marital Status</p>
-                                <select name="marital_status" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="marital_status" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     <option value="Never Married" {{ old('marital_status', $user->marital_status) == 'Never Married' ? 'selected' : '' }}>Never Married</option>
                                     <option value="Divorced" {{ old('marital_status', $user->marital_status) == 'Divorced' ? 'selected' : '' }}>Divorced</option>
@@ -247,7 +199,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Caste / Sect</p>
-                                <select name="caste" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="caste" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     @foreach($castes as $caste)
                                         <option value="{{ $caste->title }}" {{ old('caste', $user->caste) == $caste->title ? 'selected' : '' }}>{{ $caste->title }}</option>
@@ -262,7 +214,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Raashi</p>
-                                <select name="raashi" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="raashi" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     @foreach($raashis as $raashi)
                                         <option value="{{ $raashi->name }}" {{ old('raashi', $user->raashi) == $raashi->name ? 'selected' : '' }}>{{ $raashi->name }}</option>
@@ -271,7 +223,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Nakshatra</p>
-                                <select name="nakshtra" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="nakshtra" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     @foreach($nakshatras as $nakshatra)
                                         <option value="{{ $nakshatra->name }}" {{ old('nakshtra', $user->nakshtra) == $nakshatra->name ? 'selected' : '' }}>{{ $nakshatra->name }}</option>
@@ -300,7 +252,7 @@
                         <div class="space-y-6">
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Highest Education</p>
-                                <select name="highest_education_id" id="highest_education_id" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="highest_education_id" id="highest_education_id" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     @foreach($highestQualifications as $qual)
                                         <option value="{{ $qual->id }}" {{ old('highest_education_id') == $qual->id || ($user->highest_education && $user->highest_education == $qual->name) ? 'selected' : '' }}>{{ $qual->name }}</option>
@@ -309,7 +261,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Education Details</p>
-                                <select name="education_id" id="education_id" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="education_id" id="education_id" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     @foreach($educations as $edu)
                                         <option value="{{ $edu->id }}" {{ old('education_id') == $edu->id || ($user->education_details && $user->education_details == $edu->name) ? 'selected' : '' }}>{{ $edu->name }}</option>
@@ -318,7 +270,7 @@
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Occupation</p>
-                                <select name="occupation_id" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="occupation_id" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     @foreach($occupations as $occ)
                                         <option value="{{ $occ->id }}" {{ old('occupation_id') == $occ->id || ($user->occupation && $user->occupation == $occ->name) ? 'selected' : '' }}>{{ $occ->name }}</option>
@@ -334,7 +286,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Employed In</p>
-                                    <select name="employed_in" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                    <select name="employed_in" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                         <option value="">Select</option>
                                         <option value="Business" {{ old('employed_in', $user->employed_in) == 'Business' ? 'selected' : '' }}>Business</option>
                                         <option value="Defence" {{ old('employed_in', $user->employed_in) == 'Defence' ? 'selected' : '' }}>Defence</option>
@@ -393,7 +345,7 @@
                         <div class="grid grid-cols-2 gap-6 mb-6">
                             <div>
                                 <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-1">Diet</p>
-                                <select name="diet" class="text-base font-semibold text-gray-900 dark:text-white bg-transparent border-b-2 border-transparent focus:border-primary outline-none w-full">
+                                <select name="diet" class="text-base font-semibold text-gray-900 dark:text-white bg-white dark:bg-surface-dark border-b-2 border-gray-300 dark:border-white/20 focus:border-primary outline-none w-full px-2 py-1 rounded">
                                     <option value="">Select</option>
                                     <option value="Vegetarian" {{ old('diet', $user->diet) == 'Vegetarian' ? 'selected' : '' }}>Vegetarian</option>
                                     <option value="Non-Vegetarian" {{ old('diet', $user->diet) == 'Non-Vegetarian' ? 'selected' : '' }}>Non-Vegetarian</option>
@@ -440,7 +392,7 @@
                 </div>
 
                 <!-- Photos Section -->
-                <section class="xl:col-span-2 group bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-white/5 p-6 md:p-8 transition-all hover:shadow-2xl hover:border-primary/30 relative" id="photos">
+                <section class="xl:col-span-2 group bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-white/5 p-6 md:p-8 transition-all hover:shadow-2xl hover:border-primary/30 relative mt-6" id="photos">
                     <div class="flex justify-between items-start mb-6">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-gray-100 dark:bg-white/5 rounded-full text-primary">
@@ -737,5 +689,7 @@
             });
         });
 </script>
+        </div>
+    </div>
 </body>
 </html>

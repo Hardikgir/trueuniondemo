@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Membership;
+use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,11 +12,14 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\MotherTongueMaster;
 use App\Models\CasteMaster;
+use App\Traits\CreatesNotifications;
 
 class PageController extends Controller
 {
-    // ... other methods like home(), signup(), etc. ...
-
+    use CreatesNotifications;
+    /**
+     * Show home page
+     */
     public function home()
     {
         // If user is already logged in, redirect based on role
@@ -29,6 +33,30 @@ class PageController extends Controller
         }
         
         return view('pages.home');
+    }
+
+    /**
+     * Show about us page
+     */
+    public function about()
+    {
+        return view('pages.about');
+    }
+
+    /**
+     * Show success stories page
+     */
+    public function successStories()
+    {
+        return view('pages.success-stories');
+    }
+
+    /**
+     * Show terms and conditions page
+     */
+    public function terms()
+    {
+        return view('pages.terms');
     }
 
     public function signup()
@@ -50,13 +78,13 @@ class PageController extends Controller
     public function getEducations($id)
     {
         try {
-            $educations = DB::table('education_master')
-                ->where('highest_qualification_id', $id)
-                ->where('status', 1)
+        $educations = DB::table('education_master')
+            ->where('highest_qualification_id', $id)
+            ->where('status', 1)
                 ->where('is_visible', 1)
                 ->orderBy('name')
-                ->get();
-            return response()->json($educations);
+            ->get();
+        return response()->json($educations);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to load education details'], 500);
         }
@@ -70,7 +98,19 @@ class PageController extends Controller
     public function membership()
     {
         $memberships = Membership::orderBy('price', 'asc')->get();
-        return view('pages.membership', compact('memberships'));
+        
+        // Get current user's active membership if logged in
+        $currentUserMembership = null;
+        if (Auth::check()) {
+            $currentUserMembership = DB::table('user_memberships')
+                ->where('user_id', Auth::id())
+                ->where('is_active', 1)
+                ->join('memberships', 'user_memberships.membership_id', '=', 'memberships.id')
+                ->select('memberships.*')
+                ->first();
+        }
+        
+        return view('pages.membership', compact('memberships', 'currentUserMembership'));
     }
 
     public function search(Request $request)
@@ -134,13 +174,119 @@ class PageController extends Controller
         $user = Auth::user();
         
         // Get master data for filters
+        // Get castes, create sample data if none exist
         $castes = DB::table('caste_master')->where('status', 1)->get();
+        
+        // If no castes exist, create sample data
+        if ($castes->isEmpty()) {
+            $sampleCastes = [
+                ['title' => 'Brahmin', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Kshatriya', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Vaishya', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Shudra', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Jain', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Sikh', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Muslim', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Christian', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Buddhist', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['title' => 'Other', 'status' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ];
+            
+            DB::table('caste_master')->insert($sampleCastes);
+            
+            // Re-fetch castes
+            $castes = DB::table('caste_master')->where('status', 1)->get();
+        }
+        // Get highest qualifications, create sample data if none exist
         $highestQualifications = DB::table('highest_qualification_master')->where('status', 1)->where('is_visible', 1)->get();
+        
+        // If no qualifications exist, create sample data
+        if ($highestQualifications->isEmpty()) {
+            $sampleQualifications = [
+                ['name' => '10th / SSLC', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => '12th / HSC', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Diploma', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Bachelor\'s Degree', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Master\'s Degree', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'M.Phil', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Ph.D / Doctorate', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'CA', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'CS', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'ICWA', 'status' => 'active', 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ];
+            
+            DB::table('highest_qualification_master')->insert($sampleQualifications);
+            
+            // Re-fetch qualifications
+            $highestQualifications = DB::table('highest_qualification_master')->where('status', 1)->where('is_visible', 1)->get();
+        }
         $educations = DB::table('education_master')->where('status', 1)->where('is_visible', 1)->get();
         $occupations = DB::table('occupation_master')->where('status', 1)->where('is_visible', 1)->get();
         $countries = DB::table('country_manage')->where('status', 1)->get();
         $states = DB::table('state_master')->where('is_visible', 1)->get();
-        $cities = DB::table('city_master')->where('is_visible', 1)->get();
+        // Get cities, create sample data if none exist
+        $cities = DB::table('city_master')
+            ->where('is_visible', 1)
+            ->select('id', 'city_master', 'name', 'state_id')
+            ->orderBy('city_master', 'ASC')
+            ->orderBy('name', 'ASC')
+            ->get();
+        
+        // If no cities exist, create sample data
+        if ($cities->isEmpty()) {
+            // Check if country exists
+            $country = DB::table('country_manage')->where('status', 1)->first();
+            if (!$country) {
+                $countryId = DB::table('country_manage')->insertGetId([
+                    'name' => 'India',
+                    'sortname' => 'IN',
+                    'phone_code' => '+91',
+                    'status' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            } else {
+                $countryId = $country->id;
+            }
+            
+            // Check if state exists
+            $state = DB::table('state_master')->where('is_visible', 1)->first();
+            if (!$state) {
+                $stateId = DB::table('state_master')->insertGetId([
+                    'name' => 'Gujarat',
+                    'country_id' => $countryId,
+                    'is_visible' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            } else {
+                $stateId = $state->id;
+            }
+            
+            // Create sample cities
+            $sampleCities = [
+                ['city_master' => 'Mumbai', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Delhi', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Bangalore', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Hyderabad', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Chennai', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Kolkata', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Pune', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Ahmedabad', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Jaipur', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+                ['city_master' => 'Surat', 'state_id' => $stateId, 'is_visible' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ];
+            
+            DB::table('city_master')->insert($sampleCities);
+            
+            // Re-fetch cities
+            $cities = DB::table('city_master')
+                ->where('is_visible', 1)
+                ->select('id', 'city_master', 'name', 'state_id')
+                ->orderBy('city_master', 'ASC')
+                ->orderBy('name', 'ASC')
+                ->get();
+        }
         
         // Build query
         $query = User::query();
@@ -212,60 +358,109 @@ class PageController extends Controller
             // This would need custom logic based on how income is stored
         }
         
-        // Sort
-        $sortBy = $request->get('sort', 'relevance');
-        switch ($sortBy) {
-            case 'newest':
-                $query->orderBy('created_at', 'desc');
-                break;
-            case 'age_low':
-                $query->orderBy('dob', 'desc');
-                break;
-            case 'age_high':
-                $query->orderBy('dob', 'asc');
-                break;
-            default:
-                $query->inRandomOrder();
-        }
-        
-        $users = $query->paginate(20);
+        // Get all matching users first (before pagination)
+        $allUsers = $query->get();
         
         // Calculate age and match percentage for each user
-        $users->getCollection()->each(function ($match) use ($user) {
+        $allUsers->each(function ($match) use ($user) {
             if ($match->dob) {
                 $match->age = Carbon::parse($match->dob)->age;
             } else {
                 $match->age = 'N/A';
             }
             
-            // Simple match percentage calculation (can be improved)
+            // Simple match percentage calculation (deterministic - no random values)
             $matchScore = 0;
-            $totalChecks = 0;
+            $maxScore = 0;
             
-            if ($user->city && $match->city && $user->city === $match->city) {
-                $matchScore += 20;
+            // City match (20 points)
+            if ($user->city && $match->city) {
+                $maxScore += 20;
+                if ($user->city === $match->city) {
+                    $matchScore += 20;
+                }
             }
-            $totalChecks++;
             
-            if ($user->caste && $match->caste && $user->caste === $match->caste) {
-                $matchScore += 30;
+            // Caste match (30 points)
+            if ($user->caste && $match->caste) {
+                $maxScore += 30;
+                if ($user->caste === $match->caste) {
+                    $matchScore += 30;
+                }
             }
-            $totalChecks++;
             
-            if ($user->highest_education && $match->highest_education && $user->highest_education === $match->highest_education) {
-                $matchScore += 25;
+            // Education match (25 points)
+            if ($user->highest_education && $match->highest_education) {
+                $maxScore += 25;
+                if ($user->highest_education === $match->highest_education) {
+                    $matchScore += 25;
+                }
             }
-            $totalChecks++;
             
-            if ($user->mother_tongue && $match->mother_tongue && $user->mother_tongue === $match->mother_tongue) {
-                $matchScore += 25;
+            // Mother tongue match (25 points)
+            if ($user->mother_tongue && $match->mother_tongue) {
+                $maxScore += 25;
+                if ($user->mother_tongue === $match->mother_tongue) {
+                    $matchScore += 25;
+                }
             }
-            $totalChecks++;
             
-            $match->matchPercentage = $totalChecks > 0 ? min(100, $matchScore + rand(50, 100)) : rand(60, 95);
+            // Calculate percentage based on matches
+            if ($maxScore > 0) {
+                $match->matchPercentage = round(($matchScore / $maxScore) * 100);
+                // Ensure minimum of 40% and maximum of 100%
+                $match->matchPercentage = max(40, min(100, $match->matchPercentage));
+            } else {
+                // If no criteria available, default to 50%
+                $match->matchPercentage = 50;
+            }
             
             $match->location = trim(($match->city ?? '') . ($match->city && $match->country ? ', ' : '') . ($match->country ?? ''));
+            
+            // Check if user has shortlisted this profile
+            $match->isShortlisted = DB::table('user_shortlists')
+                ->where('user_id', $user->id)
+                ->where('shortlisted_user_id', $match->id)
+                ->exists();
         });
+        
+        // Sort by match percentage (highest first), then apply other sorting if needed
+        $sortBy = $request->get('sort', 'relevance');
+        $sortedUsers = $allUsers->sortByDesc('matchPercentage');
+        
+        // Apply additional sorting if not relevance
+        switch ($sortBy) {
+            case 'newest':
+                $sortedUsers = $allUsers->sortByDesc('created_at');
+                break;
+            case 'age_low':
+                $sortedUsers = $allUsers->sortByDesc(function($match) {
+                    return $match->dob ? Carbon::parse($match->dob)->timestamp : 0;
+                });
+                break;
+            case 'age_high':
+                $sortedUsers = $allUsers->sortBy(function($match) {
+                    return $match->dob ? Carbon::parse($match->dob)->timestamp : 0;
+                });
+                break;
+            default:
+                // Already sorted by match percentage descending
+                break;
+        }
+        
+        // Manually paginate the sorted collection
+        $currentPage = $request->get('page', 1);
+        $perPage = 20;
+        $currentItems = $sortedUsers->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $total = $sortedUsers->count();
+        
+        $users = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $total,
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
         
         // Get recently viewed profiles
         $recentlyViewed = collect();
@@ -305,10 +500,10 @@ class PageController extends Controller
         ]);
     }
 
-    public function viewProfile($id)
+    public function viewProfile(User $user)
     {
         $visitor = Auth::user();
-        $profileUserId = $id;
+        $profileUserId = $user->id;
 
         // Prevent users from viewing their own profile via the search page
         if ($visitor->id == $profileUserId) {
@@ -345,8 +540,7 @@ class PageController extends Controller
         }
 
 
-        // Fetch the main profile data
-        $user = User::findOrFail($profileUserId);
+        // Fetch the main profile data - user is already loaded via route model binding
         
         // Calculate age
         if ($user->dob) {
@@ -357,45 +551,104 @@ class PageController extends Controller
             $user->dobFormatted = 'N/A';
         }
         
-        // Calculate match percentage
+        // Calculate match percentage (deterministic - no random values)
         $matchScore = 0;
-        $totalChecks = 0;
+        $maxScore = 0;
         
-        if ($visitor->city && $user->city && $visitor->city === $user->city) {
-            $matchScore += 20;
+        // City match (20 points)
+        if ($visitor->city && $user->city) {
+            $maxScore += 20;
+            if ($visitor->city === $user->city) {
+                $matchScore += 20;
+            }
         }
-        $totalChecks++;
         
-        if ($visitor->caste && $user->caste && $visitor->caste === $user->caste) {
-            $matchScore += 30;
+        // Caste match (30 points)
+        if ($visitor->caste && $user->caste) {
+            $maxScore += 30;
+            if ($visitor->caste === $user->caste) {
+                $matchScore += 30;
+            }
         }
-        $totalChecks++;
         
-        if ($visitor->highest_education && $user->highest_education && $visitor->highest_education === $user->highest_education) {
-            $matchScore += 25;
+        // Education match (25 points)
+        if ($visitor->highest_education && $user->highest_education) {
+            $maxScore += 25;
+            if ($visitor->highest_education === $user->highest_education) {
+                $matchScore += 25;
+            }
         }
-        $totalChecks++;
         
-        if ($visitor->mother_tongue && $user->mother_tongue && $visitor->mother_tongue === $user->mother_tongue) {
-            $matchScore += 25;
+        // Mother tongue match (25 points)
+        if ($visitor->mother_tongue && $user->mother_tongue) {
+            $maxScore += 25;
+            if ($visitor->mother_tongue === $user->mother_tongue) {
+                $matchScore += 25;
+            }
         }
-        $totalChecks++;
         
-        $matchPercentage = $totalChecks > 0 ? min(100, $matchScore + rand(50, 100)) : rand(60, 95);
+        // Calculate percentage based on matches
+        if ($maxScore > 0) {
+            $matchPercentage = round(($matchScore / $maxScore) * 100);
+            // Ensure minimum of 40% and maximum of 100%
+            $matchPercentage = max(40, min(100, $matchPercentage));
+        } else {
+            // If no criteria available, default to 50%
+            $matchPercentage = 50;
+        }
         
         // Format location
         $user->location = trim(($user->city ?? '') . ($user->city && $user->state ? ', ' : '') . ($user->state ?? '') . ($user->state && $user->country ? ', ' : '') . ($user->country ?? ''));
         
-        // Check if interest already sent
+        // Check interest status
         $interestSent = false;
+        $interestReceived = false;
+        $interestAccepted = false;
+        $canChat = false;
+        
         try {
             $tableExists = DB::select("SHOW TABLES LIKE 'user_interests'");
             if (!empty($tableExists)) {
-                $interestSent = DB::table('user_interests')
+                // Check if visitor sent interest to this profile
+                $sentInterest = DB::table('user_interests')
                     ->where('sender_id', $visitor->id)
                     ->where('receiver_id', $user->id)
-                    ->exists();
+                    ->first();
+                
+                if ($sentInterest) {
+                    $interestSent = true;
+                    $interestAccepted = $sentInterest->status === 'accepted';
+                }
+                
+                // Check if visitor received interest from this profile
+                $receivedInterest = DB::table('user_interests')
+                    ->where('sender_id', $user->id)
+                    ->where('receiver_id', $visitor->id)
+                    ->first();
+                
+                if ($receivedInterest) {
+                    $interestReceived = true;
+                    if ($receivedInterest->status === 'accepted') {
+                        $interestAccepted = true;
+                    }
+                }
+                
+                // Can chat if:
+                // 1. Interest was accepted (either direction)
+                // 2. Interest is mutual (both sent interest to each other)
+                $canChat = $interestAccepted || ($interestSent && $interestReceived);
             }
+        } catch (\Exception $e) {
+            // Table might not exist
+        }
+        
+        // Check if profile is shortlisted
+        $isShortlisted = false;
+        try {
+            $isShortlisted = DB::table('user_shortlists')
+                ->where('user_id', $visitor->id)
+                ->where('shortlisted_user_id', $user->id)
+                ->exists();
         } catch (\Exception $e) {
             // Table might not exist
         }
@@ -404,13 +657,12 @@ class PageController extends Controller
             'user' => $user,
             'visitor' => $visitor,
             'matchPercentage' => $matchPercentage,
+            'isShortlisted' => $isShortlisted,
             'interestSent' => $interestSent,
+            'interestReceived' => $interestReceived,
+            'interestAccepted' => $interestAccepted,
+            'canChat' => $canChat,
         ]);
-    }
-
-    public function about()
-    {
-        return view('pages.about');
     }
 
     public function contact()
@@ -451,6 +703,169 @@ class PageController extends Controller
         return response()->json($cities);
     }
 
+    public function shortlist()
+    {
+        $user = Auth::user();
+        
+        // Get shortlisted profiles
+        $shortlistedUsers = collect();
+        try {
+            $shortlistIds = DB::table('user_shortlists')
+                ->where('user_id', $user->id)
+                ->pluck('shortlisted_user_id');
+            
+            if ($shortlistIds->isNotEmpty()) {
+                $shortlistedUsers = User::whereIn('id', $shortlistIds)->get();
+                
+                // Calculate age and match percentage for each user
+                $shortlistedUsers->each(function ($profile) use ($user) {
+                    if ($profile->dob) {
+                        $profile->age = Carbon::parse($profile->dob)->age;
+                    } else {
+                        $profile->age = 'N/A';
+                    }
+                    
+                    // Calculate match percentage
+                    $matchScore = 0;
+                    $totalChecks = 0;
+                    
+                    if ($user->city && $profile->city && $user->city === $profile->city) {
+                        $matchScore += 20;
+                    }
+                    $totalChecks++;
+                    
+                    if ($user->caste && $profile->caste && $user->caste === $profile->caste) {
+                        $matchScore += 30;
+                    }
+                    $totalChecks++;
+                    
+                    if ($user->highest_education && $profile->highest_education && $user->highest_education === $profile->highest_education) {
+                        $matchScore += 25;
+                    }
+                    $totalChecks++;
+                    
+                    if ($user->mother_tongue && $profile->mother_tongue && $user->mother_tongue === $profile->mother_tongue) {
+                        $matchScore += 25;
+                    }
+                    $totalChecks++;
+                    
+                    $profile->matchPercentage = $totalChecks > 0 ? min(100, $matchScore + rand(50, 100)) : rand(60, 95);
+                    
+                    // Format location
+                    $profile->location = trim(($profile->city ?? '') . ($profile->city && $profile->state ? ', ' : '') . ($profile->state ?? '') . ($profile->state && $profile->country ? ', ' : '') . ($profile->country ?? ''));
+                    
+                    // Check if interest is mutual
+                    $profile->isMutual = false;
+                    try {
+                        $visitorSent = DB::table('user_interests')
+                            ->where('sender_id', $user->id)
+                            ->where('receiver_id', $profile->id)
+                            ->exists();
+                        
+                        $profileSent = DB::table('user_interests')
+                            ->where('sender_id', $profile->id)
+                            ->where('receiver_id', $user->id)
+                            ->exists();
+                        
+                        $profile->isMutual = $visitorSent && $profileSent;
+                        
+                        // Check if interest was accepted
+                        $acceptedInterest = DB::table('user_interests')
+                            ->where(function($query) use ($user, $profile) {
+                                $query->where(function($q) use ($user, $profile) {
+                                    $q->where('sender_id', $user->id)
+                                      ->where('receiver_id', $profile->id);
+                                })->orWhere(function($q) use ($user, $profile) {
+                                    $q->where('sender_id', $profile->id)
+                                      ->where('receiver_id', $user->id);
+                                });
+                            })
+                            ->where('status', 'accepted')
+                            ->exists();
+                        
+                        $profile->canChat = $profile->isMutual || $acceptedInterest;
+                    } catch (\Exception $e) {
+                        // Table might not exist
+                    }
+                });
+            }
+        } catch (\Exception $e) {
+            // Table might not exist
+        }
+        
+        // Get counts
+        $totalCount = $shortlistedUsers->count();
+        $mutualCount = $shortlistedUsers->where('isMutual', true)->count();
+        
+        return view('pages.shortlist', [
+            'user' => $user,
+            'shortlistedUsers' => $shortlistedUsers,
+            'totalCount' => $totalCount,
+            'mutualCount' => $mutualCount,
+        ]);
+    }
+
+    public function toggleShortlist(User $user)
+    {
+        $currentUser = Auth::user();
+        $targetUser = $user;
+        
+        // Prevent users from shortlisting themselves
+        if ($currentUser->id == $targetUser->id) {
+            return back()->with('error', 'You cannot shortlist yourself.');
+        }
+        
+        // Check if already shortlisted
+        $existing = DB::table('user_shortlists')
+            ->where('user_id', $currentUser->id)
+            ->where('shortlisted_user_id', $targetUser->id)
+            ->first();
+        
+        if ($existing) {
+            // Remove from shortlist
+            DB::table('user_shortlists')
+                ->where('user_id', $currentUser->id)
+                ->where('shortlisted_user_id', $targetUser->id)
+                ->delete();
+            
+            // Log activity
+            try {
+                DB::table('user_activities')->insert([
+                    'user_id' => $currentUser->id,
+                    'activity' => 'Removed ' . $targetUser->full_name . ' from shortlist.',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Exception $e) {
+                // Table might not exist
+            }
+            
+            return back()->with('success', $targetUser->full_name . ' removed from shortlist.');
+        } else {
+            // Add to shortlist
+            DB::table('user_shortlists')->insert([
+                'user_id' => $currentUser->id,
+                'shortlisted_user_id' => $targetUser->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            // Log activity
+            try {
+                DB::table('user_activities')->insert([
+                    'user_id' => $currentUser->id,
+                    'activity' => 'Added ' . $targetUser->full_name . ' to shortlist.',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Exception $e) {
+                // Table might not exist
+            }
+            
+            return back()->with('success', $targetUser->full_name . ' added to shortlist.');
+        }
+    }
+
     public function dashboard()
     {
         $user = Auth::user();
@@ -486,7 +901,7 @@ class PageController extends Controller
                 ->where('id', '!=', $featuredMatch->id)
                 ->inRandomOrder()
                 ->take(4)
-                ->get();
+            ->get();
         } else {
             // If no featured match, get suggestions from the same query
             $suggestions = $query->inRandomOrder()->take(4)->get();
@@ -515,10 +930,47 @@ class PageController extends Controller
         ]);
     }
 
-    public function sendInterest($id)
+    public function messages()
+    {
+        $user = Auth::user();
+        
+        // Get accepted interests (mutual connections)
+        $connections = collect();
+        try {
+            $acceptedInterests = DB::table('user_interests')
+                ->where(function($query) use ($user) {
+                    $query->where('sender_id', $user->id)
+                          ->orWhere('receiver_id', $user->id);
+                })
+                ->where('status', 'accepted')
+                ->get();
+            
+            $connectionIds = $acceptedInterests->map(function($interest) use ($user) {
+                return $interest->sender_id == $user->id ? $interest->receiver_id : $interest->sender_id;
+            })->unique();
+            
+            if ($connectionIds->isNotEmpty()) {
+                $connections = User::whereIn('id', $connectionIds)->get();
+                $connections->each(function($connection) {
+                    if ($connection->dob) {
+                        $connection->age = Carbon::parse($connection->dob)->age;
+                    }
+                });
+            }
+        } catch (\Exception $e) {
+            // Table might not exist
+        }
+        
+        return view('pages.messages', [
+            'user' => $user,
+            'connections' => $connections,
+        ]);
+    }
+
+    public function sendInterest(User $user)
     {
         $currentUser = Auth::user();
-        $targetUser = User::findOrFail($id);
+        $targetUser = $user;
 
         // Prevent sending interest to yourself
         if ($currentUser->id === $targetUser->id) {
@@ -541,13 +993,24 @@ class PageController extends Controller
                 }
 
                 // Create interest record
-                DB::table('user_interests')->insert([
+                $interestId = DB::table('user_interests')->insertGetId([
                     'sender_id' => $currentUser->id,
                     'receiver_id' => $targetUser->id,
                     'status' => 'pending',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+                
+                // Create notification for the receiver
+                $this->createNotification(
+                    $targetUser,
+                    'interest',
+                    $currentUser->full_name . ' sent you an interest',
+                    $currentUser,
+                    'favorite',
+                    'primary',
+                    ['interest_id' => $interestId]
+                );
             }
 
             // Log activity (if table exists)
@@ -685,9 +1148,24 @@ class PageController extends Controller
                 ->where('id', $id)
                 ->update(['status' => 'accepted', 'updated_at' => now()]);
             
+            // Get sender
+            $sender = User::find($request->sender_id);
+            
+            // Create notification for the sender
+            if ($sender) {
+                $this->createNotification(
+                    $sender,
+                    'interest_accepted',
+                    $user->full_name . ' accepted your interest',
+                    $user,
+                    'favorite',
+                    'primary',
+                    ['interest_id' => $id]
+                );
+            }
+            
             // Log activity
             try {
-                $sender = User::find($request->sender_id);
                 DB::table('user_activities')->insert([
                     'user_id' => $user->id,
                     'activity' => 'Accepted request from ' . $sender->full_name,
