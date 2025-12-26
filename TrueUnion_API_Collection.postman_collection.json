@@ -1,0 +1,1257 @@
+{
+	"info": {
+		"_postman_id": "trueunion-api-collection",
+		"name": "TrueUnion API - User Side",
+		"description": "Complete API collection for TrueUnion user-side functionality",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "trueunion"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"mobile_number\": \"+919876543210\",\n    \"gender\": \"male\",\n    \"dob\": \"1990-01-15\",\n    \"country\": \"India\",\n    \"state\": \"Maharashtra\",\n    \"city\": \"Mumbai\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "register"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mobile_number\": \"+919876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/otp/send",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "otp", "send"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mobile_number\": \"+919876543210\",\n    \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/otp/verify",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "otp", "verify"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Google Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"access_token\": \"google_access_token_here\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/google/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "google", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/user",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "user"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logout"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/refresh-token",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "refresh-token"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"John Doe Updated\",\n    \"height\": \"5'10\\\"\",\n    \"weight\": \"70 kg\",\n    \"marital_status\": \"UnMarried\",\n    \"mother_tongue\": \"Hindi\",\n    \"occupation\": \"Software Engineer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Profile Photo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "photo",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile/photo",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profile", "photo"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/profile/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "profile", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Matches",
+			"item": [
+				{
+					"name": "Get Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/matches?page=1&per_page=20&age_from=25&age_to=35&city=Mumbai",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "matches"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								},
+								{
+									"key": "age_from",
+									"value": "25"
+								},
+								{
+									"key": "age_to",
+									"value": "35"
+								},
+								{
+									"key": "city",
+									"value": "Mumbai"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Recommended Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/matches/recommended?limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "matches", "recommended"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/search?age_from=25&age_to=35&city=Mumbai&education=Bachelor's Degree&sort_by=relevance&per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "search"],
+							"query": [
+								{
+									"key": "age_from",
+									"value": "25"
+								},
+								{
+									"key": "age_to",
+									"value": "35"
+								},
+								{
+									"key": "city",
+									"value": "Mumbai"
+								},
+								{
+									"key": "education",
+									"value": "Bachelor's Degree"
+								},
+								{
+									"key": "sort_by",
+									"value": "relevance"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Interests",
+			"item": [
+				{
+					"name": "Send Interest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/interest/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "interest", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Interest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/interest/:id/accept",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "interest", ":id", "accept"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Decline Interest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/interest/:id/decline",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "interest", ":id", "decline"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/requests?type=incoming",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "requests"],
+							"query": [
+								{
+									"key": "type",
+									"value": "incoming"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Incoming Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/requests/incoming",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "requests", "incoming"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sent Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/requests/sent",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "requests", "sent"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Shortlist",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/shortlist/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "shortlist", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Shortlist",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/shortlist",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "shortlist"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Messages",
+			"item": [
+				{
+					"name": "Get Conversations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "messages"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Chat",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/messages/chat/:user_id?last_message_id=0",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "messages", "chat", ":user_id"],
+							"query": [
+								{
+									"key": "last_message_id",
+									"value": "0"
+								}
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Hello! How are you?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/messages/send/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "messages", "send", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get New Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/messages/new/:user_id?last_message_id=100",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "messages", "new", ":user_id"],
+							"query": [
+								{
+									"key": "last_message_id",
+									"value": "100"
+								}
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Message as Read",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/messages/:message_id/read",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "messages", ":message_id", "read"],
+							"variable": [
+								{
+									"key": "message_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications?filter=all&page=1&per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications"],
+							"query": [
+								{
+									"key": "filter",
+									"value": "all"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/unread-count",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", "unread-count"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/:id/read",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", ":id", "read"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All Notifications as Read",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/read-all",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", "read-all"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notification Settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email_notifications\": true,\n    \"sms_notifications\": false,\n    \"digest_frequency\": \"daily\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/settings",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", "settings"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Membership",
+			"item": [
+				{
+					"name": "Get All Memberships",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/memberships",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "memberships"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current Membership",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/memberships/current",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "memberships", "current"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Subscribe to Membership",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/memberships/:membership_id/subscribe",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "memberships", ":membership_id", "subscribe"],
+							"variable": [
+								{
+									"key": "membership_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "Get Report Form",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/report/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "report", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Report",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{api_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"spam_scam\",\n    \"details\": \"User is sending spam messages\",\n    \"block_user\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/report/:user_id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "report", ":user_id"],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Location Data",
+			"item": [
+				{
+					"name": "Get Countries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/countries",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "countries"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get States",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"country_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/states",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "states"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cities",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"state_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/cities",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "cities"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Educations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/educations/:qualification_id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "educations", ":qualification_id"],
+							"variable": [
+								{
+									"key": "qualification_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "api_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
