@@ -37,11 +37,14 @@ class UserController extends Controller
         // Calculate days remaining if membership exists
         $daysRemaining = null;
         if ($activeMembership) {
-            if ($activeMembership->expires_at) {
+            // Free plans (price = 0) never expire, so don't calculate days remaining
+            if ($activeMembership->price == 0) {
+                $daysRemaining = null; // Free plan never expires
+            } elseif ($activeMembership->expires_at) {
                 $expiresAt = Carbon::parse($activeMembership->expires_at);
                 $daysRemaining = (int) round(now()->diffInDays($expiresAt, false)); // Round to nearest integer
             } elseif ($activeMembership->purchased_at) {
-                // If no expiry date, calculate from purchased_at + 30 days
+                // If no expiry date for paid plans, calculate from purchased_at + 30 days
                 $expiresAt = Carbon::parse($activeMembership->purchased_at)->addDays(30);
                 $daysRemaining = (int) round(now()->diffInDays($expiresAt, false)); // Round to nearest integer
             }

@@ -77,21 +77,32 @@
                         <strong>Visits Used:</strong> 
                         <span class="float-right">{{ $activeMembership->visits_used }} / {{ $activeMembership->visits_allowed }}</span>
                     </div>
-                    @if($daysRemaining !== null)
+                    @if($activeMembership)
                         <hr>
                         <div class="text-center">
-                            @php
-                                $daysRemainingRounded = (int) round($daysRemaining);
-                            @endphp
-                            <h3 class="mb-0 {{ $daysRemainingRounded < 0 ? 'text-danger' : ($daysRemainingRounded < 7 ? 'text-warning' : 'text-success') }}">
-                                @if($daysRemainingRounded < 0)
-                                    Expired {{ abs($daysRemainingRounded) }} day{{ abs($daysRemainingRounded) != 1 ? 's' : '' }} ago
-                                @elseif($daysRemainingRounded == 0)
-                                    Expires Today
-                                @else
-                                    {{ $daysRemainingRounded }} day{{ $daysRemainingRounded != 1 ? 's' : '' }} remaining
-                                @endif
-                            </h3>
+                            @if($activeMembership->price == 0)
+                                <h3 class="mb-0 text-success">
+                                    Never Expires
+                                </h3>
+                                <p class="text-muted mb-0 small">Free plan is active indefinitely</p>
+                            @elseif($daysRemaining !== null)
+                                @php
+                                    $daysRemainingRounded = (int) round($daysRemaining);
+                                @endphp
+                                <h3 class="mb-0 {{ $daysRemainingRounded < 0 ? 'text-danger' : ($daysRemainingRounded < 7 ? 'text-warning' : 'text-success') }}">
+                                    @if($daysRemainingRounded < 0)
+                                        Expired {{ abs($daysRemainingRounded) }} day{{ abs($daysRemainingRounded) != 1 ? 's' : '' }} ago
+                                    @elseif($daysRemainingRounded == 0)
+                                        Expires Today
+                                    @else
+                                        {{ $daysRemainingRounded }} day{{ $daysRemainingRounded != 1 ? 's' : '' }} remaining
+                                    @endif
+                                </h3>
+                            @else
+                                <h3 class="mb-0 text-muted">
+                                    Expiry date not set
+                                </h3>
+                            @endif
                         </div>
                     @endif
                 @else
