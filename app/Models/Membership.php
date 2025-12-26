@@ -18,7 +18,18 @@ class Membership extends Model
         'name',
         'price',
         'visits_allowed',
-        'features', // Add the new features column here
+        'features',
+        'is_featured',
+        'badge',
+        'description',
+        'is_active',
+        'display_order',
+    ];
+
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'is_active' => 'boolean',
+        'display_order' => 'integer',
     ];
 }
 

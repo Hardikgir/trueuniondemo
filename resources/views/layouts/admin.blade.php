@@ -83,6 +83,12 @@
                             <p>Memberships</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-flag"></i>
+                            <p>Reports</p>
+                        </a>
+                    </li>
                     
                     {{-- Settings Menu --}}
                     <li class="nav-item {{ request()->routeIs('admin.settings.*') ? 'menu-open' : '' }}">
@@ -196,6 +202,20 @@
 <!-- AdminLTE App -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 @stack('scripts')
+
+<script>
+    // Auto-hide success alerts after 5 seconds
+    $(document).ready(function() {
+        $('.alert-success').each(function() {
+            var $alert = $(this);
+            setTimeout(function() {
+                $alert.fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            }, 5000); // 5 seconds
+        });
+    });
+</script>
 </body>
 </html>
 

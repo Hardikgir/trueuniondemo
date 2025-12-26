@@ -1,0 +1,342 @@
+Laravel Project Development Rules
+
+PROJECT CONTEXT
+
+This is a production-grade Laravel application.
+Code quality, maintainability, correctness, and long-term scalability are higher priority than speed or short-term fixes.
+
+The system is expected to grow in:
+- Features
+- Data volume
+- Users
+- Complexity
+
+Assume this code will be maintained by multiple developers over time.
+
+
+ARCHITECTURE AND CODE ORGANIZATION
+
+Controllers must be thin and focused only on:
+- Handling HTTP requests
+- Validating input
+- Returning responses
+
+All business logic must live in:
+- Service classes (app/Services)
+- Action classes (app/Actions)
+
+Controllers must delegate work to services or actions and never contain business rules.
+
+Service classes:
+- Represent domain-level business logic
+- Are reusable across controllers, jobs, commands, and listeners
+- Handle coordination between models, actions, and external services
+
+Action classes:
+- Represent a single, focused operation
+- Must do one thing well
+- Be easily testable and reusable
+
+Use dependency injection everywhere.
+Never instantiate services manually inside controllers.
+
+Avoid database queries in controllers.
+Use Eloquent models with proper relationships or repositories when abstraction is required.
+
+
+CODE STANDARDS
+
+Follow PSR-12 coding standards strictly.
+
+Always declare strict types at the top of PHP files:
+declare(strict_types=1);
+
+Use type hints for all method parameters and return types.
+
+Use PHP 8.2 features when appropriate, including:
+- Enums
+- Readonly properties
+- Typed properties
+
+Naming conventions:
+- Classes: PascalCase
+- Methods and variables: camelCase
+- Constants: UPPER_SNAKE_CASE
+
+Use meaningful, descriptive names.
+Avoid abbreviations unless they are universally understood.
+
+
+PROBLEM SOLVING PHILOSOPHY
+
+When fixing bugs or errors, never apply temporary patches or surface-level fixes.
+
+Always identify and fix the root cause of the problem.
+
+Do not:
+- Silence errors
+- Add defensive conditionals just to avoid failures
+- Bypass logic without understanding why it fails
+
+If an error occurs:
+- Analyze why the error happens
+- Fix the underlying design, logic, or data issue
+- Ensure the solution prevents recurrence
+- Update related code if required for consistency
+
+If fixing the root cause requires refactoring, refactoring is mandatory.
+
+Avoid “quick fixes” that only make the error disappear.
+
+
+REASONING BEFORE CODING
+
+Before writing or modifying code, always reason explicitly about:
+- What the problem is
+- Why it occurs
+- What the correct solution is
+
+Code must be the result of clear reasoning, not guesswork or trial-and-error.
+
+
+DESIGN OVER PATCHING
+
+If a bug exposes a design flaw, fix the design.
+
+Prefer:
+- Clear responsibilities
+- Proper data modeling
+- Separation of concerns
+
+Over:
+- Conditional hacks
+- Hard-coded exceptions
+- One-off fixes
+
+Architecture improvements are preferred over localized patches.
+
+
+FAIL FAST
+
+Validate assumptions as early as possible.
+
+Reject invalid data immediately rather than allowing it to:
+- Propagate through layers
+- Cause downstream failures
+- Corrupt application state
+
+Prefer explicit failures over hidden ones.
+
+
+SINGLE SOURCE OF TRUTH
+
+Business rules, validation logic, and calculations must exist in one place only.
+
+Never duplicate logic across:
+- Controllers
+- Services
+- Models
+- Frontend and backend
+
+If logic appears more than once:
+- Extract it
+- Centralize it
+- Reuse it
+
+
+SECURITY
+
+Never commit credentials, API keys, or secrets to version control.
+
+All sensitive data must be stored in .env and accessed via config().
+
+Use Laravel’s authentication and authorization systems.
+Protect routes using middleware.
+
+Always validate and sanitize user input using Laravel validation rules.
+
+Never trust user input.
+
+Prevent SQL injection by using:
+- Eloquent ORM
+- Query builder
+Never interpolate user input into raw queries.
+
+Use CSRF protection on all forms and state-changing requests.
+
+Hash passwords using Laravel’s Hash facade.
+Never store plaintext passwords.
+
+Encrypt sensitive data using Laravel’s Crypt facade.
+
+
+DATABASE AND PERFORMANCE
+
+Avoid N+1 queries by using eager loading (with, load).
+
+Use indexes on frequently queried columns and all foreign keys.
+
+Paginate large datasets.
+Never load large tables fully into memory.
+
+Use select() to limit retrieved columns when possible.
+
+Use transactions for atomic operations.
+
+Use chunk() or cursor() for large batch processing.
+
+Cache expensive operations using Laravel’s Cache facade with appropriate TTLs.
+
+Use query scopes to encapsulate reusable query logic.
+
+
+MODEL RELATIONSHIPS
+
+Define all relationships explicitly in Eloquent models.
+
+Always define inverse relationships when applicable.
+
+Use foreign key constraints in migrations to enforce referential integrity.
+
+Define cascade behavior (onDelete, onUpdate) intentionally.
+
+
+RESPONSE HANDLING
+
+Return consistent response formats across the application.
+
+Use appropriate HTTP status codes:
+200, 201, 400, 401, 403, 404, 422, 500
+
+Never expose internal errors or sensitive details to users.
+
+Validation errors must follow a consistent structure.
+
+
+ERROR HANDLING AND LOGGING
+
+Never suppress errors.
+
+Avoid empty catch blocks.
+
+Every exception must be:
+- Handled meaningfully
+- Rethrown
+- Or converted into a clear, actionable error response
+
+Use Laravel’s logging system with appropriate log levels.
+
+Log detailed errors internally, but show user-friendly messages externally.
+
+Create custom exceptions when they improve clarity or categorization.
+
+
+TESTING PHILOSOPHY
+
+Testing is part of the fix, not an afterthought.
+
+When fixing a bug:
+- Add or update tests that would have caught it
+
+Write unit tests for:
+- Services
+- Actions
+- Domain logic
+
+Write feature tests for:
+- Controllers
+- Routes
+- End-to-end request flows
+
+A fix is incomplete if it is not covered by tests.
+
+
+MIGRATIONS AND DATABASE MANAGEMENT
+
+Always use migrations for schema changes.
+
+Never modify the database manually.
+
+Migration names must be descriptive.
+
+Always implement both up() and down() methods.
+
+Add indexes and foreign keys explicitly in migrations.
+
+
+ROUTES
+
+Group related routes using route groups and middleware.
+
+Use resource controllers for CRUD operations.
+
+Follow RESTful conventions.
+
+Name all routes.
+
+Use route model binding whenever possible.
+
+
+CONFIGURATION
+
+Store configuration in config files.
+
+Never use env() directly in application logic.
+
+Access configuration using the config() helper.
+
+
+FILE HANDLING
+
+Store uploaded files using Laravel’s Storage facade.
+
+Never store uploads directly in public.
+
+Validate file types and sizes.
+
+Generate unique filenames.
+
+
+EVENTS, QUEUES, AND NOTIFICATIONS
+
+Use events and listeners for decoupled logic.
+
+Fire events for important domain actions.
+
+Use queues for:
+- Emails
+- Notifications
+- Long-running tasks
+
+Notifications must use Laravel’s notification system.
+
+
+CODE REUSABILITY
+
+Extract reusable logic into:
+- Services
+- Actions
+- Traits
+- Middleware
+- Form Request classes
+
+Use service providers to bind interfaces to implementations.
+
+
+DOCUMENTATION
+
+Add PHPDoc blocks to:
+- Public methods
+- Complex logic
+- Domain-critical code
+
+Document non-obvious decisions inline.
+
+Keep README and project documentation updated.
+
+
+QUALITY OVER SPEED
+
+Correctness, clarity, and long-term maintainability are more important than speed.
+
+If a proper solution takes longer, choose the proper solution.

@@ -31,6 +31,8 @@ class SubscriptionController extends Controller
             'membership_id' => $membership->id,
             'is_active' => 1,
             'visits_used' => 0, // Reset visit count
+            'purchased_at' => now(),
+            'expires_at' => now()->addDays(30), // Set expiry to 30 days from now
             'created_at' => now(),
             'updated_at' => now(),
         ]);

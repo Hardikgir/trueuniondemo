@@ -4,12 +4,25 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            // Assign free plan to newly created users
+            $membershipService = app(\App\Services\MembershipService::class);
+            $membershipService->assignFreePlan($user);
+        });
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -116,5 +129,27 @@ class User extends Authenticatable
     public function getRouteKey()
     {
         return encrypt($this->getAttribute($this->getRouteKeyName()));
+    }
+
+    /**
+     * Get the user's memberships.
+     */
+    public function memberships(): BelongsToMany
+    {
+        return $this->belongsToMany(Membership::class, 'user_memberships')
+            ->withPivot('visits_used', 'is_active', 'purchased_at', 'expires_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the user's active membership.
+     */
+    public function activeMembership()
+    {
+        return $this->belongsToMany(Membership::class, 'user_memberships')
+            ->wherePivot('is_active', 1)
+            ->withPivot('visits_used', 'is_active', 'purchased_at', 'expires_at')
+            ->withTimestamps()
+            ->first();
     }
 }

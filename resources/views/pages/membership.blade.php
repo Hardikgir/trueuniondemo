@@ -79,13 +79,15 @@
 
                     <!-- Pricing Cards Grid -->
                     <div class="w-full max-w-[1200px] px-4 md:px-6 mb-16">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            @php
-                                $goldPlan = $memberships->firstWhere('name', 'Gold') ?? $memberships->firstWhere('name', 'gold');
-                                $platinumPlan = $memberships->firstWhere('name', 'Platinum') ?? $memberships->firstWhere('name', 'platinum');
-                            @endphp
-
-                            <!-- Free Plan -->
+                        @php
+                            $totalPlans = count($memberships) + 1; // +1 for Free plan
+                            $gridClass = 'grid-cols-1';
+                            if ($totalPlans == 2) $gridClass .= ' md:grid-cols-2';
+                            elseif ($totalPlans == 3) $gridClass .= ' md:grid-cols-2 lg:grid-cols-3';
+                            else $gridClass .= ' md:grid-cols-2 lg:grid-cols-4';
+                        @endphp
+                        <div class="grid {{ $gridClass }} gap-6">
+                            <!-- Free Plan (Always shown) -->
                             <div class="flex flex-col gap-6 rounded-2xl border border-solid border-border-dark bg-surface-dark p-8 hover:border-text-dim transition-colors duration-300">
                                 <div class="flex flex-col gap-2">
                                     <div class="flex items-center justify-between">
@@ -121,122 +123,76 @@
                                 </button>
                             </div>
 
-                            <!-- Gold Plan (Highlighted) -->
-                            @if($goldPlan)
-                            <div class="relative flex flex-col gap-6 rounded-2xl border-2 border-primary bg-surface-darker p-8 shadow-[0_0_30px_rgba(236,55,19,0.15)] transform md:-translate-y-4">
-                                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg whitespace-nowrap">
-                                    MOST POPULAR
-                                </div>
-                                <div class="flex flex-col gap-2 mt-2">
-                                    <div class="flex items-center justify-between">
-                                        <h3 class="text-white text-xl font-bold">{{ $goldPlan->name }}</h3>
-                                        <span class="bg-primary/20 text-primary text-xs font-bold uppercase tracking-wider rounded-full px-3 py-1">Standard</span>
+                            <!-- Dynamic Plans from Database -->
+                            @foreach($memberships as $plan)
+                                <div class="relative flex flex-col gap-6 rounded-2xl {{ $plan->is_featured ? 'border-2 border-primary bg-surface-darker shadow-[0_0_30px_rgba(236,55,19,0.15)] transform md:-translate-y-4' : 'border border-solid border-border-dark bg-surface-dark hover:border-text-dim transition-colors duration-300' }} p-8">
+                                    @if($plan->is_featured)
+                                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg whitespace-nowrap">
+                                            MOST POPULAR
+                                        </div>
+                                    @endif
+                                    <div class="flex flex-col gap-2 {{ $plan->is_featured ? 'mt-2' : '' }}">
+                                        <div class="flex items-center justify-between">
+                                            <h3 class="text-white text-xl font-bold">{{ $plan->name }}</h3>
+                                            @if($plan->badge)
+                                                <span class="{{ $plan->is_featured ? 'bg-primary/20 text-primary' : 'text-text-dim border border-border-dark' }} text-xs font-bold uppercase tracking-wider rounded-full px-3 py-1">{{ $plan->badge }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-baseline gap-1 mt-2">
+                                            <span class="text-white text-5xl font-black tracking-tighter">₹{{ number_format($plan->price) }}</span>
+                                            <span class="text-text-dim text-base font-medium">/mo</span>
+                                        </div>
+                                        <p class="text-text-dim text-sm">{{ $plan->description ?? 'Billed monthly.' }}</p>
                                     </div>
-                                    <div class="flex items-baseline gap-1 mt-2">
-                                        <span class="text-white text-5xl font-black tracking-tighter">₹{{ number_format($goldPlan->price) }}</span>
-                                        <span class="text-text-dim text-base font-medium">/mo</span>
+                                    <div class="h-px w-full bg-border-dark my-2"></div>
+                                    <div class="flex flex-col gap-4 flex-1">
+                                        @if($plan->features)
+                                            @foreach(explode("\n", $plan->features) as $feature)
+                                                @if(trim($feature))
+                                                    <div class="flex items-start gap-3 text-sm text-white">
+                                                        <span class="material-symbols-outlined text-primary">check_circle</span>
+                                                        <span>{{ trim($feature) }}</span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <!-- Default features if none specified -->
+                                            <div class="flex items-start gap-3 text-sm text-white">
+                                                <span class="material-symbols-outlined text-primary">check_circle</span>
+                                                <span>View {{ $plan->visits_allowed }} Phone Numbers</span>
+                                            </div>
+                                            <div class="flex items-start gap-3 text-sm text-white">
+                                                <span class="material-symbols-outlined text-primary">check_circle</span>
+                                                <span>Unlimited Direct Chat</span>
+                                            </div>
+                                        @endif
                                     </div>
-                                    <p class="text-text-dim text-sm">Billed monthly.</p>
-                                </div>
-                                <div class="h-px w-full bg-border-dark my-2"></div>
-                                <div class="flex flex-col gap-4 flex-1">
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>View {{ $goldPlan->visits_allowed ?? 50 }} Phone Numbers</span>
-                                    </div>
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>Unlimited Direct Chat</span>
-                                    </div>
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>3x Profile Visibility</span>
-                                    </div>
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>Smart Match Suggestions</span>
-                                    </div>
-                                </div>
-                                @if($currentUserMembership && $currentUserMembership->id == $goldPlan->id)
-                                    <button class="w-full h-12 rounded-full bg-primary/20 border border-primary text-primary text-sm font-bold">
-                                        Current Plan
-                                    </button>
-                                @else
-                                    @auth
-                                    <form action="{{ route('subscribe', $goldPlan->id) }}" method="POST" class="w-full">
-                                        @csrf
-                                        <input type="hidden" name="billing_period" value="monthly">
-                                        <button type="submit" class="w-full h-12 rounded-full bg-primary text-white text-sm font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-900/20">
-                                            Upgrade to Gold
+                                    @if($currentUserMembership && $currentUserMembership->id == $plan->id)
+                                        <button class="w-full h-12 rounded-full bg-primary/20 border border-primary text-primary text-sm font-bold">
+                                            Current Plan
                                         </button>
-                                    </form>
                                     @else
-                                    <a href="{{ route('login') }}" class="block w-full h-12 rounded-full bg-primary text-white text-sm font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-900/20 text-center leading-[48px]">
-                                        Upgrade to Gold
-                                    </a>
-                                    @endauth
-                                @endif
-                            </div>
-                            @endif
-
-                            <!-- Platinum Plan -->
-                            @if($platinumPlan)
-                            <div class="flex flex-col gap-6 rounded-2xl border border-solid border-border-dark bg-surface-dark p-8 hover:border-text-dim transition-colors duration-300">
-                                <div class="flex flex-col gap-2">
-                                    <div class="flex items-center justify-between">
-                                        <h3 class="text-white text-xl font-bold">{{ $platinumPlan->name }}</h3>
-                                        <span class="text-text-dim text-xs font-bold uppercase tracking-wider border border-border-dark rounded-full px-3 py-1">Premium</span>
-                                    </div>
-                                    <div class="flex items-baseline gap-1 mt-2">
-                                        <span class="text-white text-5xl font-black tracking-tighter">₹{{ number_format($platinumPlan->price) }}</span>
-                                        <span class="text-text-dim text-base font-medium">/mo</span>
-                                    </div>
-                                    <p class="text-text-dim text-sm">Everything in Gold, plus more.</p>
+                                        @auth
+                                        <form action="{{ route('subscribe', $plan->id) }}" method="POST" class="w-full">
+                                            @csrf
+                                            <input type="hidden" name="billing_period" value="monthly">
+                                            <button type="submit" class="w-full h-12 rounded-full {{ $plan->is_featured ? 'bg-primary text-white hover:bg-red-600 shadow-lg shadow-red-900/20' : 'border border-border-dark bg-transparent text-white hover:bg-border-dark' }} text-sm font-bold transition-colors">
+                                                {{ $plan->is_featured ? 'Upgrade to ' . $plan->name : 'Select ' . $plan->name }}
+                                            </button>
+                                        </form>
+                                        @else
+                                        <a href="{{ route('login') }}" class="block w-full h-12 rounded-full {{ $plan->is_featured ? 'bg-primary text-white hover:bg-red-600 shadow-lg shadow-red-900/20' : 'border border-border-dark bg-transparent text-white hover:bg-border-dark' }} text-sm font-bold transition-colors text-center leading-[48px]">
+                                            {{ $plan->is_featured ? 'Upgrade to ' . $plan->name : 'Select ' . $plan->name }}
+                                        </a>
+                                        @endauth
+                                    @endif
                                 </div>
-                                <div class="h-px w-full bg-border-dark my-2"></div>
-                                <div class="flex flex-col gap-4 flex-1">
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>Unlimited Phone Numbers</span>
-                                    </div>
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>Priority 24/7 Support</span>
-                                    </div>
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>5x Profile Visibility</span>
-                                    </div>
-                                    <div class="flex items-start gap-3 text-sm text-white">
-                                        <span class="material-symbols-outlined text-primary">check_circle</span>
-                                        <span>Dedicated Relationship Manager</span>
-                                    </div>
-                                </div>
-                                @if($currentUserMembership && $currentUserMembership->id == $platinumPlan->id)
-                                    <button class="w-full h-12 rounded-full bg-primary/20 border border-primary text-primary text-sm font-bold">
-                                        Current Plan
-                                    </button>
-                                @else
-                                    @auth
-                                    <form action="{{ route('subscribe', $platinumPlan->id) }}" method="POST" class="w-full">
-                                        @csrf
-                                        <input type="hidden" name="billing_period" value="monthly">
-                                        <button type="submit" class="w-full h-12 rounded-full border border-border-dark bg-transparent text-white text-sm font-bold hover:bg-border-dark transition-colors">
-                                            Select Platinum
-                                        </button>
-                                    </form>
-                                    @else
-                                    <a href="{{ route('login') }}" class="block w-full h-12 rounded-full border border-border-dark bg-transparent text-white text-sm font-bold hover:bg-border-dark transition-colors text-center leading-[48px]">
-                                        Select Platinum
-                                    </a>
-                                    @endauth
-                                @endif
-                            </div>
-                            @endif
+                            @endforeach
                         </div>
                     </div>
 
                     <!-- Detailed Feature Comparison -->
+                    @if(count($memberships) > 0)
                     <div class="w-full max-w-[960px] px-4 md:px-6 mb-20">
                         <h2 class="text-white text-2xl md:text-3xl font-bold mb-8 text-center">Detailed Comparison</h2>
                         <div class="overflow-hidden rounded-2xl border border-border-dark bg-surface-dark">
@@ -244,50 +200,54 @@
                                 <table class="w-full text-left border-collapse">
                                     <thead>
                                         <tr class="bg-surface-darker border-b border-border-dark">
-                                            <th class="p-4 md:p-6 text-sm font-bold text-text-dim uppercase tracking-wider w-1/3">Features</th>
-                                            <th class="p-4 md:p-6 text-sm font-bold text-white text-center w-1/6">Free</th>
-                                            <th class="p-4 md:p-6 text-sm font-bold text-primary text-center w-1/6">Gold</th>
-                                            <th class="p-4 md:p-6 text-sm font-bold text-white text-center w-1/6">Platinum</th>
+                                            <th class="p-4 md:p-6 text-sm font-bold text-text-dim uppercase tracking-wider" style="width: 30%;">Features</th>
+                                            <th class="p-4 md:p-6 text-sm font-bold text-white text-center" style="width: {{ 70 / (count($memberships) + 1) }}%;">Free</th>
+                                            @foreach($memberships as $plan)
+                                                <th class="p-4 md:p-6 text-sm font-bold {{ $plan->is_featured ? 'text-primary' : 'text-white' }} text-center" style="width: {{ 70 / (count($memberships) + 1) }}%;">{{ $plan->name }}</th>
+                                            @endforeach
                                         </tr>
                                     </thead>
                                     <tbody class="text-sm">
                                         <tr class="border-b border-border-dark hover:bg-background-dark/50 transition-colors">
                                             <td class="p-4 md:px-6 md:py-4 font-medium text-white">Browse Profiles</td>
                                             <td class="p-4 text-center"><span class="material-symbols-outlined text-text-dim">check</span></td>
-                                            <td class="p-4 text-center"><span class="material-symbols-outlined text-primary">check_circle</span></td>
-                                            <td class="p-4 text-center"><span class="material-symbols-outlined text-primary">check_circle</span></td>
+                                            @foreach($memberships as $plan)
+                                                <td class="p-4 text-center"><span class="material-symbols-outlined text-primary">check_circle</span></td>
+                                            @endforeach
                                         </tr>
                                         <tr class="border-b border-border-dark hover:bg-background-dark/50 transition-colors">
                                             <td class="p-4 md:px-6 md:py-4 font-medium text-white">Access Contact Details</td>
                                             <td class="p-4 text-center"><span class="material-symbols-outlined text-text-dim opacity-30">close</span></td>
-                                            <td class="p-4 text-center text-white">{{ $goldPlan->visits_allowed ?? 50 }}/month</td>
-                                            <td class="p-4 text-center font-bold text-white">Unlimited</td>
+                                            @foreach($memberships as $plan)
+                                                <td class="p-4 text-center text-white">
+                                                    @if($plan->visits_allowed >= 999)
+                                                        Unlimited
+                                                    @else
+                                                        {{ $plan->visits_allowed }}/month
+                                                    @endif
+                                                </td>
+                                            @endforeach
                                         </tr>
                                         <tr class="border-b border-border-dark hover:bg-background-dark/50 transition-colors">
                                             <td class="p-4 md:px-6 md:py-4 font-medium text-white">Instant Chat</td>
                                             <td class="p-4 text-center"><span class="material-symbols-outlined text-text-dim opacity-30">close</span></td>
-                                            <td class="p-4 text-center"><span class="material-symbols-outlined text-primary">check_circle</span></td>
-                                            <td class="p-4 text-center"><span class="material-symbols-outlined text-primary">check_circle</span></td>
+                                            @foreach($memberships as $plan)
+                                                <td class="p-4 text-center"><span class="material-symbols-outlined text-primary">check_circle</span></td>
+                                            @endforeach
                                         </tr>
                                         <tr class="border-b border-border-dark hover:bg-background-dark/50 transition-colors">
-                                            <td class="p-4 md:px-6 md:py-4 font-medium text-white">Profile Boosting</td>
-                                            <td class="p-4 text-center"><span class="material-symbols-outlined text-text-dim opacity-30">close</span></td>
-                                            <td class="p-4 text-center text-white">3x Reach</td>
-                                            <td class="p-4 text-center font-bold text-white">5x Reach</td>
-                                        </tr>
-                                        <tr class="hover:bg-background-dark/50 transition-colors">
-                                            <td class="p-4 md:px-6 md:py-4 font-medium text-white">Dedicated Support</td>
-                                            <td class="p-4 text-center"><span class="material-symbols-outlined text-text-dim opacity-30">close</span></td>
-                                            <td class="p-4 text-center"><span class="material-symbols-outlined text-text-dim">mail</span></td>
-                                            <td class="p-4 text-center font-bold text-primary flex justify-center gap-1 items-center">
-                                                <span class="material-symbols-outlined">star</span> Priority
-                                            </td>
+                                            <td class="p-4 md:px-6 md:py-4 font-medium text-white">Price (Monthly)</td>
+                                            <td class="p-4 text-center text-white font-bold">₹0</td>
+                                            @foreach($memberships as $plan)
+                                                <td class="p-4 text-center text-white font-bold">₹{{ number_format($plan->price) }}</td>
+                                            @endforeach
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
+                    @endif
 
                     <!-- Secure Checkout Section -->
                     <div class="w-full bg-surface-dark border-t border-border-dark py-16">

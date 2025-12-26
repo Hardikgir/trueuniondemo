@@ -3,6 +3,19 @@
 @section('title', 'Edit User: ' . $user->full_name)
 
 @section('content')
+
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h5><i class="icon fas fa-ban"></i> Validation Error!</h5>
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <form action="{{ route('admin.users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PATCH')
@@ -90,8 +103,10 @@
                                 <div class="form-group col-md-6">
                                     <label>Height *</label>
                                     <select name="height" class="form-control" required>
-                                        <option>{{ old('height', $user->height) }}</option>
-                                        {{-- Add other height options if needed --}}
+                                        <option value="" {{ !old('height', $user->height) ? 'selected' : '' }}>Select Height</option>
+                                        @foreach(['4ft ( 121 cm )', '4ft 1in ( 124cm )', '4ft 2in ( 127cm )', '4ft 3in ( 129cm )', '4ft 4in ( 132cm )', '4ft 5in ( 132cm )', '4ft 6in ( 137cm )', '4ft 7in ( 139cm )', '4ft 8in ( 142cm )', '4ft 9in ( 144cm )', '4ft 10in ( 147cm )', '4ft 11in ( 149cm )', '5ft ( 152cm )', '5ft 1in ( 154cm )', '5ft 2in ( 157cm )', '5ft 3in ( 160cm )', '5ft 4in ( 162cm )', '5ft 5in ( 165cm )', '5ft 6in ( 167cm )', '5ft 7in ( 170cm )', '5ft 8in ( 172cm )', '5ft 9in ( 175cm )', '5ft 10in ( 177cm )', '5ft 11in ( 180cm )', '6ft ( 182cm )', '6ft 1in ( 185cm )', '6ft 2in ( 187cm )', '6ft 3in ( 190cm )', '6ft 4in ( 193cm )', '6ft 5in ( 195cm )', '6ft 6in ( 198cm )', '6ft 7in ( 200cm )', '6ft 8in ( 203cm )', '6ft 9in ( 205cm )', '6ft 10in ( 208cm )', '6ft 11in ( 210cm )', '7ft ( 213cm )'] as $height)
+                                            <option value="{{ $height }}" {{ old('height', $user->height) == $height ? 'selected' : '' }}>{{ $height }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="form-group col-md-6">
@@ -123,8 +138,16 @@
                                 <div class="form-group col-md-6">
                                     <label>Marital Status *</label>
                                     <select name="marital_status" class="form-control" required>
-                                         <option>UnMarried</option>
-                                         {{-- Add more options if needed --}}
+                                        @php
+                                            $currentMaritalStatus = old('marital_status', $user->marital_status ?: 'UnMarried');
+                                        @endphp
+                                        <option value="UnMarried" {{ $currentMaritalStatus == 'UnMarried' ? 'selected' : '' }}>UnMarried</option>
+                                        <option value="Never Married" {{ $currentMaritalStatus == 'Never Married' ? 'selected' : '' }}>Never Married</option>
+                                        <option value="Divorced" {{ $currentMaritalStatus == 'Divorced' ? 'selected' : '' }}>Divorced</option>
+                                        <option value="Divorcee" {{ $currentMaritalStatus == 'Divorcee' ? 'selected' : '' }}>Divorcee</option>
+                                        <option value="Widowed" {{ $currentMaritalStatus == 'Widowed' ? 'selected' : '' }}>Widowed</option>
+                                        <option value="Widow/Widower" {{ $currentMaritalStatus == 'Widow/Widower' ? 'selected' : '' }}>Widow/Widower</option>
+                                        <option value="Seperated" {{ $currentMaritalStatus == 'Seperated' ? 'selected' : '' }}>Seperated</option>
                                     </select>
                                 </div>
                                 <div class="form-group col-md-6">
@@ -162,8 +185,8 @@
                                     <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label>Mobile Number *</label>
-                                    <input type="text" name="mobile_number" class="form-control" value="{{ old('mobile_number', $user->mobile_number) }}" required>
+                                    <label>Mobile Number</label>
+                                    <input type="text" name="mobile_number" class="form-control" value="{{ old('mobile_number', $user->mobile_number) }}">
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label>Country *</label>
@@ -187,10 +210,125 @@
 
     <div class="row">
         <div class="col-12 mb-4">
-             <button type="submit" class="btn btn-primary">Save All Changes</button>
+             <button type="submit" class="btn btn-primary" id="submitBtn">Save All Changes</button>
              <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancel</a>
         </div>
     </div>
 </form>
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Prevent default HTML5 validation
+    $('form').attr('novalidate', 'novalidate');
+    
+    // Handle form submission to show tabs with errors
+    $('form').on('submit', function(e) {
+        var form = this;
+        var isValid = true;
+        var firstInvalidField = null;
+        var firstInvalidTab = null;
+        
+        // Remove previous invalid classes
+        $(form).find('.is-invalid').removeClass('is-invalid');
+        
+        // Check all required fields
+        $(form).find('input[required], select[required], textarea[required]').each(function() {
+            var field = $(this);
+            var fieldValue = field.val();
+            var isFieldValid = true;
+            
+            // Check if field is empty or invalid
+            if (field.attr('type') === 'email') {
+                var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                isFieldValid = fieldValue && emailPattern.test(fieldValue);
+            } else if (field.is('select')) {
+                isFieldValid = fieldValue && fieldValue !== '';
+            } else {
+                isFieldValid = fieldValue && fieldValue.trim() !== '';
+            }
+            
+            if (!isFieldValid) {
+                isValid = false;
+                field.addClass('is-invalid');
+                
+                // Find the tab containing this field
+                var tabPane = field.closest('.tab-pane');
+                
+                if (tabPane.length && !tabPane.hasClass('active')) {
+                    var tabId = tabPane.attr('id');
+                    var tabLink = $('a[href="#' + tabId + '"]');
+                    
+                    // Activate the tab
+                    tabLink.tab('show');
+                    
+                    // Store first invalid tab for scrolling
+                    if (!firstInvalidTab) {
+                        firstInvalidTab = tabPane;
+                    }
+                }
+                
+                // Store first invalid field for focusing
+                if (!firstInvalidField) {
+                    firstInvalidField = field;
+                }
+            }
+        });
+        
+        // If form is invalid, prevent submission
+        if (!isValid) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show alert
+            alert('Please fill in all required fields. The form will navigate to fields that need attention.');
+            
+            // Wait for tab animation, then focus and scroll
+            setTimeout(function() {
+                if (firstInvalidTab) {
+                    $('html, body').animate({
+                        scrollTop: $(firstInvalidTab).offset().top - 100
+                    }, 300);
+                }
+                
+                if (firstInvalidField) {
+                    firstInvalidField.focus();
+                }
+            }, 400);
+            
+            return false;
+        }
+    });
+    
+    // Remove invalid class on input
+    $('input, select, textarea').on('input change', function() {
+        var field = $(this);
+        var fieldValue = field.val();
+        var isFieldValid = true;
+        
+        if (field.attr('required')) {
+            if (field.attr('type') === 'email') {
+                var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                isFieldValid = fieldValue && emailPattern.test(fieldValue);
+            } else if (field.is('select')) {
+                isFieldValid = fieldValue && fieldValue !== '';
+            } else {
+                isFieldValid = fieldValue && fieldValue.trim() !== '';
+            }
+            
+            if (isFieldValid) {
+                field.removeClass('is-invalid');
+            }
+        }
+    });
+});
+</script>
+<style>
+.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+</style>
+@endpush
 @endsection
 

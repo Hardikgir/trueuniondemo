@@ -22,6 +22,74 @@ class UserController extends Controller
     }
 
     /**
+     * Display the specified user.
+     */
+    public function show(User $user)
+    {
+        // Get active membership with expiry
+        $activeMembership = DB::table('user_memberships')
+            ->where('user_memberships.user_id', $user->id)
+            ->where('user_memberships.is_active', 1)
+            ->join('memberships', 'user_memberships.membership_id', '=', 'memberships.id')
+            ->select('user_memberships.*', 'memberships.name as membership_name', 'memberships.price', 'memberships.visits_allowed')
+            ->first();
+
+        // Calculate days remaining if membership exists
+        $daysRemaining = null;
+        if ($activeMembership) {
+            if ($activeMembership->expires_at) {
+                $expiresAt = Carbon::parse($activeMembership->expires_at);
+                $daysRemaining = (int) round(now()->diffInDays($expiresAt, false)); // Round to nearest integer
+            } elseif ($activeMembership->purchased_at) {
+                // If no expiry date, calculate from purchased_at + 30 days
+                $expiresAt = Carbon::parse($activeMembership->purchased_at)->addDays(30);
+                $daysRemaining = (int) round(now()->diffInDays($expiresAt, false)); // Round to nearest integer
+            }
+        }
+
+        // Get all membership history
+        $membershipHistory = DB::table('user_memberships')
+            ->where('user_memberships.user_id', $user->id)
+            ->join('memberships', 'user_memberships.membership_id', '=', 'memberships.id')
+            ->select('user_memberships.*', 'memberships.name as membership_name', 'memberships.price')
+            ->orderBy('user_memberships.created_at', 'desc')
+            ->get();
+
+        // Get user activity history
+        $activityHistory = DB::table('user_activities')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        // Get user update history from updated_at timestamps
+        $updateHistory = [];
+        if ($user->updated_at && $user->updated_at != $user->created_at) {
+            $updateHistory[] = [
+                'type' => 'Profile Updated',
+                'description' => 'User profile information was updated',
+                'date' => $user->updated_at,
+            ];
+        }
+
+        // Add membership changes to history
+        foreach ($membershipHistory as $membership) {
+            $updateHistory[] = [
+                'type' => 'Membership ' . ($membership->is_active ? 'Activated' : 'Deactivated'),
+                'description' => $membership->membership_name . ' membership ' . ($membership->is_active ? 'activated' : 'deactivated'),
+                'date' => $membership->is_active ? ($membership->created_at ?? $membership->purchased_at) : $membership->updated_at,
+            ];
+        }
+
+        // Sort update history by date
+        usort($updateHistory, function($a, $b) {
+            return strtotime($b['date']) - strtotime($a['date']);
+        });
+
+        return view('admin.users.show', compact('user', 'activeMembership', 'daysRemaining', 'membershipHistory', 'activityHistory', 'updateHistory'));
+    }
+
+    /**
      * Show the form for editing the specified user.
      */
     public function edit(User $user)
@@ -44,15 +112,14 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         // Validate all incoming data, including profile fields and management fields
-        $request->validate([
+        $rules = [
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'role' => ['required', Rule::in(['user', 'admin'])],
             'membership_id' => ['nullable', 'exists:memberships,id'],
-            // Add validation for other essential fields from the partial
-            'birth_day' => ['required', 'integer'],
-            'birth_month' => ['required', 'integer'],
-            'birth_year' => ['required', 'integer'],
+            'birth_day' => ['required', 'integer', 'min:1', 'max:31'],
+            'birth_month' => ['required', 'integer', 'min:1', 'max:12'],
+            'birth_year' => ['required', 'integer', 'min:1950', 'max:' . (date('Y') - 18)],
             'height' => ['required', 'string'],
             'marital_status' => ['required', 'string'],
             'highest_education' => ['required', 'string'],
@@ -60,8 +127,16 @@ class UserController extends Controller
             'country' => ['required', 'string'],
             'state' => ['required', 'string'],
             'city' => ['required', 'string'],
-            'mobile_number' => ['required', 'string', Rule::unique('users')->ignore($user->id)],
-        ]);
+        ];
+
+        // Mobile number validation - only validate uniqueness if provided
+        if ($request->filled('mobile_number')) {
+            $rules['mobile_number'] = ['string', Rule::unique('users')->ignore($user->id)];
+        } else {
+            $rules['mobile_number'] = ['nullable', 'string'];
+        }
+
+        $request->validate($rules);
 
         // Prepare profile data for update
         $updateData = $request->except(['_token', '_method', 'membership_id', 'birth_day', 'birth_month', 'birth_year', 'languages']);
@@ -95,6 +170,8 @@ class UserController extends Controller
                 'membership_id' => $newMembershipId,
                 'is_active' => 1,
                 'visits_used' => 0, // Reset visits count when admin assigns a new plan
+                'purchased_at' => now(),
+                'expires_at' => now()->addDays(30), // Set expiry to 30 days from now
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

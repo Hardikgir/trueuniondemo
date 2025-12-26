@@ -10,7 +10,7 @@ class MembershipController extends Controller
 {
     public function index()
     {
-        $memberships = Membership::all();
+        $memberships = Membership::orderBy('display_order')->orderBy('price')->get();
         return view('admin.memberships.index', compact('memberships'));
     }
 
@@ -25,10 +25,19 @@ class MembershipController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'visits_allowed' => 'required|integer|min:0',
-            'features' => 'nullable|string', // Validation for the new field
+            'features' => 'nullable|string',
+            'is_featured' => 'nullable|boolean',
+            'badge' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+            'display_order' => 'nullable|integer|min:0',
         ]);
 
-        Membership::create($request->all()); // This will now include 'features'
+        $data = $request->all();
+        $data['is_featured'] = $request->has('is_featured');
+        $data['is_active'] = $request->has('is_active') ? true : ($request->input('is_active') === '0' ? false : true);
+
+        Membership::create($data);
 
         return redirect()->route('admin.memberships.index')->with('success', 'Membership plan created successfully.');
     }
@@ -44,10 +53,19 @@ class MembershipController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'visits_allowed' => 'required|integer|min:0',
-            'features' => 'nullable|string', // Validation for the new field
+            'features' => 'nullable|string',
+            'is_featured' => 'nullable|boolean',
+            'badge' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+            'display_order' => 'nullable|integer|min:0',
         ]);
 
-        $membership->update($request->all()); // This will now include 'features'
+        $data = $request->all();
+        $data['is_featured'] = $request->has('is_featured');
+        $data['is_active'] = $request->has('is_active') ? true : ($request->input('is_active') === '0' ? false : true);
+
+        $membership->update($data);
 
         return redirect()->route('admin.memberships.index')->with('success', 'Membership plan updated successfully.');
     }

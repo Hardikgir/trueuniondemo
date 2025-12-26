@@ -27,7 +27,11 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Price (₹)</th>
-                    <th>Visits Allowed</th>
+                    <th>Visits</th>
+                    <th>Badge</th>
+                    <th>Featured</th>
+                    <th>Active</th>
+                    <th>Order</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -36,8 +40,24 @@
                     <tr>
                         <td>{{ $membership->id }}</td>
                         <td>{{ $membership->name }}</td>
-                        <td>{{ $membership->price }}</td>
+                        <td>₹{{ number_format($membership->price) }}</td>
                         <td>{{ $membership->visits_allowed }}</td>
+                        <td>{{ $membership->badge ?? '-' }}</td>
+                        <td>
+                            @if($membership->is_featured)
+                                <span class="badge badge-success">Yes</span>
+                            @else
+                                <span class="badge badge-secondary">No</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($membership->is_active ?? true)
+                                <span class="badge badge-success">Active</span>
+                            @else
+                                <span class="badge badge-danger">Inactive</span>
+                            @endif
+                        </td>
+                        <td>{{ $membership->display_order ?? 0 }}</td>
                         <td>
                             <a href="{{ route('admin.memberships.edit', $membership->id) }}" class="btn btn-sm btn-primary">Edit</a>
                             <form action="{{ route('admin.memberships.destroy', $membership->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this plan?');">
@@ -49,7 +69,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center">No membership plans found. Please add one.</td>
+                        <td colspan="9" class="text-center">No membership plans found. Please add one.</td>
                     </tr>
                 @endforelse
             </tbody>

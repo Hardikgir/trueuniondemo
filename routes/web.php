@@ -90,8 +90,12 @@ Route::middleware('auth')->group(function () {
 // --- ADMIN PANEL ROUTES ---
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-    Route::resource('users', AdminUserController::class)->except(['show', 'create', 'store']);
+    Route::resource('users', AdminUserController::class)->except(['create', 'store']);
     Route::resource('memberships', MembershipController::class);
+    Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/{report}', [\App\Http\Controllers\Admin\ReportController::class, 'show'])->name('reports.show');
+    Route::patch('/reports/{report}/status', [\App\Http\Controllers\Admin\ReportController::class, 'updateStatus'])->name('reports.update-status');
+    Route::post('/reports/bulk-update', [\App\Http\Controllers\Admin\ReportController::class, 'bulkUpdate'])->name('reports.bulk-update');
     
     // Settings Routes
     Route::prefix('settings')->name('settings.')->group(function () {

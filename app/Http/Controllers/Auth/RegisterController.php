@@ -121,13 +121,13 @@ class RegisterController extends Controller
             $filteredUserData['role'] = 'user';
         }
         
-        // 5. Create the new user
+        // 5. Create the new user (free plan will be assigned automatically via model event)
         $user = User::create($filteredUserData);
 
-        // 4. Log the new user in
+        // 6. Log the new user in
         Auth::login($user);
 
-        // 5. Redirect them to the dashboard
+        // 7. Redirect them to the dashboard
         return redirect()->route('dashboard');
     }
 }

@@ -97,7 +97,11 @@ class PageController extends Controller
 
     public function membership()
     {
-        $memberships = Membership::orderBy('price', 'asc')->get();
+        // Get only active memberships, ordered by display_order then price
+        $memberships = Membership::where('is_active', true)
+            ->orderBy('display_order')
+            ->orderBy('price', 'asc')
+            ->get();
         
         // Get current user's active membership if logged in
         $currentUserMembership = null;

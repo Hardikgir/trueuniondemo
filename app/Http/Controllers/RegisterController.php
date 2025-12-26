@@ -31,6 +31,7 @@ class RegisterController extends Controller
             $imagePath = 'profiles/' . $imageName;
         }
 
+        // Create the new user (free plan will be assigned automatically via model event)
         $user = User::create([
             'full_name' => $request->full_name,
             'email' => $request->email,
