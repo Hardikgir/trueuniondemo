@@ -22,10 +22,16 @@
         </div>
     </div>
     <div class="card-body">
-        <!-- Filters -->
-        <form method="GET" action="{{ route('admin.reports.index') }}" class="mb-3">
+        <!-- Search and Filters -->
+        <form method="GET" action="{{ route('admin.reports.index') }}" id="filterForm" class="mb-3">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Search</label>
+                        <input type="text" name="search" class="form-control" placeholder="Search reports..." value="{{ request('search') }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
                     <div class="form-group">
                         <label>Status</label>
                         <select name="status" class="form-control">
@@ -37,7 +43,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <div class="form-group">
                         <label>Reason</label>
                         <select name="reason" class="form-control">
@@ -50,15 +56,32 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <div class="form-group">
-                        <label>&nbsp;</label>
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-filter"></i> Filter
-                        </button>
+                        <label>Block Requested</label>
+                        <select name="block_requested" class="form-control">
+                            <option value="">All</option>
+                            <option value="yes" {{ request('block_requested') == 'yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ request('block_requested') == 'no' ? 'selected' : '' }}>No</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Date From</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Date To</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
                     </div>
                 </div>
             </div>
+            <!-- Hidden fields for sorting -->
+            <input type="hidden" name="sort_by" id="sort_by" value="{{ request('sort_by', 'created_at') }}">
+            <input type="hidden" name="sort_order" id="sort_order" value="{{ request('sort_order', 'desc') }}">
         </form>
 
         <!-- Reports Table -->
@@ -69,13 +92,40 @@
                         <th width="30">
                             <input type="checkbox" id="selectAll">
                         </th>
-                        <th>ID</th>
+                        <th>
+                            <a href="javascript:void(0)" class="sort-link text-dark" data-sort="id">
+                                ID
+                                @if(request('sort_by') == 'id')
+                                    <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted"></i>
+                                @endif
+                            </a>
+                        </th>
                         <th>Reporter</th>
                         <th>Reported User</th>
                         <th>Reason</th>
-                        <th>Status</th>
+                        <th>
+                            <a href="javascript:void(0)" class="sort-link text-dark" data-sort="status">
+                                Status
+                                @if(request('sort_by') == 'status')
+                                    <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted"></i>
+                                @endif
+                            </a>
+                        </th>
                         <th>Block Requested</th>
-                        <th>Reported On</th>
+                        <th>
+                            <a href="javascript:void(0)" class="sort-link text-dark" data-sort="created_at">
+                                Reported On
+                                @if(request('sort_by') == 'created_at' || !request('sort_by'))
+                                    <i class="fas fa-sort-{{ (request('sort_order', 'desc') == 'asc') ? 'up' : 'down' }}"></i>
+                                @else
+                                    <i class="fas fa-sort text-muted"></i>
+                                @endif
+                            </a>
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -191,6 +241,55 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Auto-apply filters function
+    function applyFilters() {
+        $('#filterForm').submit();
+    }
+
+    // Debounced search input
+    const debouncedSearch = debounce(applyFilters, 500);
+    
+    // Search input change
+    $('input[name="search"]').on('input', function() {
+        debouncedSearch();
+    });
+
+    // Filter dropdowns change
+    $('select[name="status"], select[name="reason"], select[name="block_requested"], input[name="date_from"], input[name="date_to"]').on('change', function() {
+        applyFilters();
+    });
+
+    // Sorting functionality
+    $('.sort-link').on('click', function() {
+        const sortBy = $(this).data('sort');
+        const currentSortBy = $('#sort_by').val();
+        const currentSortOrder = $('#sort_order').val();
+        
+        if (sortBy === currentSortBy) {
+            // Toggle sort order
+            $('#sort_order').val(currentSortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            // New column, default to ascending
+            $('#sort_by').val(sortBy);
+            $('#sort_order').val('asc');
+        }
+        
+        applyFilters();
+    });
+
     // Select all checkbox
     $('#selectAll').on('change', function() {
         $('.report-checkbox').prop('checked', this.checked);

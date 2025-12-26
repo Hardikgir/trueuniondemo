@@ -13,20 +13,65 @@ class ReportController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Report::with(['reporter', 'reportedUser'])
-            ->orderBy('created_at', 'desc');
+        $query = Report::with(['reporter', 'reportedUser']);
+
+        // Search functionality - search across multiple fields
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('id', 'like', "%{$searchTerm}%")
+                  ->orWhere('reason', 'like', "%{$searchTerm}%")
+                  ->orWhere('details', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('reporter', function ($q) use ($searchTerm) {
+                      $q->where('full_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('email', 'like', "%{$searchTerm}%");
+                  })
+                  ->orWhereHas('reportedUser', function ($q) use ($searchTerm) {
+                      $q->where('full_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('email', 'like', "%{$searchTerm}%");
+                  });
+            });
+        }
 
         // Filter by status
-        if ($request->has('status') && $request->status !== '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         // Filter by reason
-        if ($request->has('reason') && $request->reason !== '') {
+        if ($request->filled('reason')) {
             $query->where('reason', $request->reason);
         }
 
-        $reports = $query->paginate(20);
+        // Filter by block requested
+        if ($request->filled('block_requested')) {
+            $query->where('block_user', $request->block_requested == 'yes' ? 1 : 0);
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        // Validate sort_by to prevent SQL injection
+        $allowedSortColumns = ['id', 'status', 'reason', 'created_at', 'updated_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+        
+        // Validate sort_order
+        $sortOrder = strtolower($sortOrder) === 'asc' ? 'asc' : 'desc';
+        
+        $query->orderBy($sortBy, $sortOrder);
+
+        $reports = $query->paginate(20)->withQueryString();
 
         return view('admin.reports.index', compact('reports'));
     }

@@ -11,6 +11,66 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <style>
+        /* Ensure sidebar is fixed and stays in place */
+        .main-sidebar {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1030;
+        }
+        
+        /* Ensure sidebar stays fixed on scroll */
+        .sidebar {
+            height: calc(100vh - 57px);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* Ensure navbar stays fixed */
+        .main-header {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1031;
+        }
+        
+        /* Adjust content wrapper margin for fixed sidebar */
+        .content-wrapper {
+            margin-left: 250px;
+        }
+        
+        /* Adjust footer margin for fixed sidebar */
+        .main-footer {
+            margin-left: 250px;
+        }
+        
+        /* When sidebar is collapsed */
+        body.sidebar-collapse .content-wrapper,
+        body.sidebar-collapse .main-footer {
+            margin-left: 78px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 767.98px) {
+            .main-sidebar {
+                margin-left: -250px;
+            }
+            
+            body.sidebar-open .main-sidebar {
+                margin-left: 0;
+            }
+            
+            .content-wrapper,
+            .main-footer {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
     @stack('styles')
 </head>
 <body class="hold-transition sidebar-mini">

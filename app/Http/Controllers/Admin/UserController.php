@@ -15,9 +15,74 @@ class UserController extends Controller
     /**
      * Display a listing of the users.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->paginate(15);
+        $query = User::query();
+
+        // Search functionality - search across multiple fields
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('full_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('email', 'like', "%{$searchTerm}%")
+                  ->orWhere('mobile_number', 'like', "%{$searchTerm}%")
+                  ->orWhere('id', 'like', "%{$searchTerm}%")
+                  ->orWhere('city', 'like', "%{$searchTerm}%")
+                  ->orWhere('state', 'like', "%{$searchTerm}%")
+                  ->orWhere('country', 'like', "%{$searchTerm}%")
+                  ->orWhere('occupation', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Filter by role
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        // Filter by membership status
+        if ($request->filled('membership_status')) {
+            if ($request->membership_status === 'with_membership') {
+                $query->whereExists(function ($q) {
+                    $q->select(DB::raw(1))
+                      ->from('user_memberships')
+                      ->whereColumn('user_memberships.user_id', 'users.id')
+                      ->where('user_memberships.is_active', 1);
+                });
+            } elseif ($request->membership_status === 'without_membership') {
+                $query->whereNotExists(function ($q) {
+                    $q->select(DB::raw(1))
+                      ->from('user_memberships')
+                      ->whereColumn('user_memberships.user_id', 'users.id')
+                      ->where('user_memberships.is_active', 1);
+                });
+            }
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        // Validate sort_by to prevent SQL injection
+        $allowedSortColumns = ['id', 'full_name', 'email', 'created_at', 'role'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+        
+        // Validate sort_order
+        $sortOrder = strtolower($sortOrder) === 'asc' ? 'asc' : 'desc';
+        
+        $query->orderBy($sortBy, $sortOrder);
+
+        $users = $query->paginate(15)->withQueryString();
+
         return view('admin.users.index', compact('users'));
     }
 

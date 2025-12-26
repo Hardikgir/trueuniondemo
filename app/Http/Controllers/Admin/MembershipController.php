@@ -8,9 +8,62 @@ use Illuminate\Http\Request;
 
 class MembershipController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $memberships = Membership::orderBy('display_order')->orderBy('price')->get();
+        $query = Membership::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('id', 'like', "%{$searchTerm}%")
+                  ->orWhere('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('badge', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%")
+                  ->orWhere('features', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Filter by featured
+        if ($request->filled('is_featured')) {
+            $query->where('is_featured', $request->is_featured == 'yes' ? 1 : 0);
+        }
+
+        // Filter by active status
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->is_active == 'yes' ? 1 : 0);
+        }
+
+        // Filter by price range
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $request->price_min);
+        }
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $request->price_max);
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'display_order');
+        $sortOrder = $request->get('sort_order', 'asc');
+        
+        // Validate sort_by to prevent SQL injection
+        $allowedSortColumns = ['id', 'name', 'price', 'visits_allowed', 'display_order', 'created_at', 'updated_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'display_order';
+        }
+        
+        // Validate sort_order
+        $sortOrder = strtolower($sortOrder) === 'desc' ? 'desc' : 'asc';
+        
+        // If sorting by display_order, add secondary sort by price
+        if ($sortBy === 'display_order') {
+            $query->orderBy('display_order', $sortOrder)->orderBy('price', 'asc');
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $memberships = $query->get();
+
         return view('admin.memberships.index', compact('memberships'));
     }
 
